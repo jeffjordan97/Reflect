@@ -9,29 +9,35 @@ Guided weekly review and AI insight platform for working professionals.
 ## Repository structure
 
 ```
-reflect-app/
-├── .github/workflows/ci.yml      GitHub Actions — CI + Railway deploy
-├── docs/adr/                      Architecture Decision Records (ADR-001 to ADR-006)
-├── frontend/                      Next.js 14 App Router (Vercel)
-├── src/
-│   ├── main/java/com/reflect/
-│   │   ├── api/                   REST controllers
-│   │   ├── mcp/                   MCP adapter layer (Phase 2)
-│   │   ├── service/               Business logic
-│   │   ├── agent/                 AI agent layer (Phase 3)
-│   │   ├── domain/                JPA entities
-│   │   ├── repository/            Spring Data JPA interfaces
-│   │   ├── scheduler/             @Scheduled jobs
-│   │   └── config/                Spring configuration beans
-│   └── main/resources/
-│       ├── db/migration/          Flyway SQL migrations (V1, V2, V3...)
-│       ├── db/seed/               Dev-only seed data (V2 — never runs in prod)
-│       ├── application.yml        Base config
-│       ├── application-dev.yml    Local dev overrides
-│       └── application-prod.yml   Railway production overrides
-├── CLAUDE.md                      Claude Code project instructions
-├── docker-compose.yml             Local dev: Postgres + Redis + Mailhog
-└── pom.xml
+Reflect/
+├── api/                             Spring Boot 3.3 (Java 21) backend
+│   ├── src/main/java/com/reflect/
+│   │   ├── config/                  Security, JWT, CORS, properties
+│   │   ├── controller/              REST controllers + DTOs
+│   │   ├── service/                 Business logic
+│   │   ├── domain/                  JPA entities
+│   │   ├── repository/              Spring Data JPA interfaces
+│   │   └── exception/               Error handling
+│   ├── src/main/resources/
+│   │   ├── db/migration/            Flyway SQL migrations (V1–V3)
+│   │   ├── application.yml          Base config
+│   │   ├── application-dev.yml      Local dev overrides
+│   │   └── application-test.yml     Test profile (Testcontainers)
+│   ├── src/test/                    Unit + integration tests
+│   └── pom.xml
+├── web/                             Next.js 14 (TypeScript) frontend
+│   ├── src/app/                     App Router pages
+│   ├── src/components/              UI components (Ark UI + Tailwind)
+│   ├── src/lib/                     API client, auth provider, types
+│   └── package.json
+├── docs/                            Project documentation
+│   ├── adr/                         Architecture Decision Records
+│   ├── reflect-prd-v1.2.md          Product Requirements Document
+│   ├── reflect-sdd-v1.2.md          System Design Document
+│   ├── reflect-design-system-v1.0.md Design System & Component Library
+│   └── superpowers/                 Specs and implementation plans
+├── docker-compose.yml               Local dev: Postgres + Redis + MailHog
+└── .sdkmanrc                        Auto-switches to Java 21
 ```
 
 ---
@@ -41,62 +47,66 @@ reflect-app/
 ### Prerequisites
 
 - Java 21 (install via [SDKMAN](https://sdkman.io/): `sdk install java 21-tem`)
-- Maven 3.9+ (`mvn --version`)
+- Maven 3.9+
+- Node.js 18+
 - Docker Desktop
-- IntelliJ IDEA or VS Code with Java extension pack
 
 ### Steps
 
-**1. Clone and configure environment**
+**1. Clone and generate JWT keys**
 
 ```bash
-git clone https://github.com/your-username/reflect-app.git
-cd reflect-app
-cp .env.local.example .env.local
-# Edit .env.local with your actual values (see comments in the file)
-```
-
-**2. Generate JWT keys (first time only)**
-
-```bash
+git clone git@github.com:jeffjordan97/Reflect.git
+cd Reflect
+cd api
 openssl genrsa -out private.pem 2048
 openssl rsa -in private.pem -pubout -out public.pem
-# Copy contents into .env.local as JWT_PRIVATE_KEY and JWT_PUBLIC_KEY
-rm private.pem public.pem  # Don't leave key files in the repo directory
 ```
 
-**3. Start local infrastructure**
+**2. Start local infrastructure**
 
 ```bash
+cd ..  # back to repo root
 docker-compose up -d
-# Postgres running on localhost:5432
-# Redis running on localhost:6379
-# Mailhog web UI at http://localhost:8025
+# Postgres on localhost:5432
+# Redis on localhost:6379
+# MailHog web UI at http://localhost:8025
 ```
 
-**4. Run the API**
+**3. Run the backend**
 
 ```bash
-# Set env vars (or configure IntelliJ Run Configuration with .env.local)
-export $(cat .env.local | xargs)
+cd api
+export JWT_PRIVATE_KEY="$(cat private.pem)"
+export JWT_PUBLIC_KEY="$(cat public.pem)"
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 # API at http://localhost:8080
 # Health check: http://localhost:8080/actuator/health
 ```
 
-Flyway runs automatically on startup and applies V1, V2 (dev seed), and V3 migrations.
-The seed data creates one Pro user: `jeffrey@reflect.app` / `reflect123`.
+Flyway runs automatically on startup and creates the `users`, `refresh_tokens`, and `check_ins` tables.
+
+**4. Run the frontend** (separate terminal)
+
+```bash
+cd web
+npm install   # first time only
+npm run dev
+# Frontend at http://localhost:3000
+```
+
+The Next.js dev server proxies `/api/*` requests to the Spring Boot backend.
 
 **5. Run tests**
 
 ```bash
+cd api
+
 # Unit tests only (fast — no Docker required)
 mvn test
 
 # Full test suite including integration tests (requires Docker for Testcontainers)
 mvn verify
-
-# Coverage report at target/site/jacoco/index.html
 ```
 
 ---
@@ -105,24 +115,19 @@ mvn verify
 
 ### Railway (API)
 
-Push to `main` → GitHub Actions CI passes → Railway automatically deploys.
-
-Production deploy requires manual approval in GitHub Environments.
-
-Railway auto-detects the Maven project and builds with:
+Set root directory to `api/`. Railway builds with:
 ```bash
 mvn clean package -DskipTests
-java -jar target/reflect-api-*.jar
+java -jar target/reflect-api-1.0.0-SNAPSHOT.jar
 ```
 
-Set `SPRING_PROFILES_ACTIVE=prod` and all secrets from `.env.local.example` in Railway's environment variable dashboard.
+Required environment variables: `SPRING_PROFILES_ACTIVE=prod`, `DATABASE_URL`, `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`.
 
 ### Vercel (Frontend)
 
-Push to `main` → Vercel automatically deploys from `frontend/` directory.
-Preview deployments created for every PR.
+Set root directory to `web/`. Framework auto-detected as Next.js.
 
-Set `NEXT_PUBLIC_API_URL` to `https://api.reflect.app` in Vercel environment variables.
+Configure API rewrites to point to the Railway backend URL instead of `localhost:8080`.
 
 ---
 
@@ -147,11 +152,11 @@ Do not re-open a decided ADR. Create a new one if a decision needs revisiting.
 
 | Document | Location |
 |----------|----------|
-| PRD v1.2 | `/docs/reflect-prd-v1.2.docx` |
-| System Design Document v1.2 | `/docs/reflect-sdd-v1.2.docx` |
-| Design System v1.0 | `/docs/reflect-design-system-v1.0.docx` |
-| Business Plan v1.0 | `/docs/reflect-business-plan.docx` |
-| Financial Tracker | `/docs/reflect-financial-tracker.xlsx` |
+| PRD v1.2 | [`docs/reflect-prd-v1.2.md`](docs/reflect-prd-v1.2.md) |
+| System Design Document v1.2 | [`docs/reflect-sdd-v1.2.md`](docs/reflect-sdd-v1.2.md) |
+| Design System v1.0 | [`docs/reflect-design-system-v1.0.md`](docs/reflect-design-system-v1.0.md) |
+| MVP Design Spec | [`docs/superpowers/specs/2026-04-15-reflect-mvp-design.md`](docs/superpowers/specs/2026-04-15-reflect-mvp-design.md) |
+| MVP Implementation Plan | [`docs/superpowers/plans/2026-04-15-reflect-mvp.md`](docs/superpowers/plans/2026-04-15-reflect-mvp.md) |
 
 ---
 
