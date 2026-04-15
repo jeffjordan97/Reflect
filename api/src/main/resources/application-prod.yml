@@ -1,0 +1,94 @@
+# application-prod.yml
+# Active when: SPRING_PROFILES_ACTIVE=prod
+# Platform: Railway (API) + Neon (PostgreSQL) + Vercel (frontend)
+#
+# All secrets set as Railway environment variables.
+
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      keepalive-time: 60000
+      connection-test-query: SELECT 1
+
+  # Disable Redis for MVP
+  data:
+    redis:
+      repositories:
+        enabled: false
+  cache:
+    type: none
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+  flyway:
+    locations: classpath:db/migration
+    validate-on-migrate: true
+
+  jpa:
+    show-sql: false
+
+# Disable Sentry for MVP
+sentry:
+  dsn:
+  enabled: false
+
+# Production overrides
+reflect:
+  security:
+    bcrypt-strength: 12
+
+  # Placeholders for Phase 2+ — not used in MVP but required by ReflectProperties binding
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY:not-configured}
+    base-url: https://api.anthropic.com
+    api-version: "2023-06-01"
+    model-haiku: claude-haiku-4-5-20251001
+    model-sonnet: claude-sonnet-4-6
+    timeout-seconds: 60
+    max-tokens-monthly-insight: 1200
+    max-tokens-quarterly-insight: 1500
+    max-tokens-nudge: 100
+    max-tokens-interpersonal-classify: 10
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:not-configured}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:not-configured}
+    price-id-monthly: ${STRIPE_PRICE_MONTHLY:not-configured}
+    price-id-annual: ${STRIPE_PRICE_ANNUAL:not-configured}
+  sendgrid:
+    api-key: ${SENDGRID_API_KEY:not-configured}
+    from-email: hello@reflect.app
+    from-name: Reflect
+    template-welcome: d-placeholder
+    template-sunday-reminder: d-placeholder
+    template-monthly-digest: d-placeholder
+    template-nudge: d-placeholder
+    template-billing-alert: d-placeholder
+    template-password-reset: d-placeholder
+    template-email-verify: d-placeholder
+  free-tier:
+    max-check-ins: 4
+  reminder:
+    default-time: "09:00"
+    default-day: SUNDAY
+  agent:
+    min-entries-for-pattern: 4
+    nudge-strength-threshold: 7
+    nudge-cooldown-days: 7
+    avoidance-word-count-threshold: 30
+  mcp:
+    rate-limit-per-hour: 60
+
+logging:
+  level:
+    root: WARN
+    com.reflect: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+    org.flywaydb: INFO
