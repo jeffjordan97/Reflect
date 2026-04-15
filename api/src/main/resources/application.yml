@@ -1,0 +1,217 @@
+# application.yml
+# ── Base configuration — applies to all profiles ──────────────────────
+# Profile-specific overrides live in:
+#   application-dev.yml   (local docker-compose)
+#   application-prod.yml  (Railway + Neon + Upstash)
+#
+# Active profile is set by SPRING_PROFILES_ACTIVE env var.
+# Railway: set SPRING_PROFILES_ACTIVE=prod in service environment.
+# Local:   set SPRING_PROFILES_ACTIVE=dev in .env.local or IDE run config.
+
+spring:
+  application:
+    name: reflect-api
+
+  # ── JPA / Hibernate ────────────────────────────────────────────────
+  jpa:
+    hibernate:
+      # validate: Hibernate checks schema matches entities but does NOT alter it.
+      # Flyway owns all schema changes. Never use create, create-drop, or update.
+      ddl-auto: validate
+    # open-in-view=false: prevents lazy-loading outside transactions.
+    # Required for proper service-layer transaction boundaries.
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+
+  # ── Flyway ─────────────────────────────────────────────────────────
+  flyway:
+    enabled: true
+    # Default locations — dev profile adds classpath:db/seed for V2 seed data
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
+    out-of-order: false
+
+  # ── Datasource defaults ─────────────────────────────────────────────
+  # Profile-specific datasource URLs are set in application-{profile}.yml.
+  # HikariCP connection pool defaults (overridden in prod profile).
+  datasource:
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      # Connection test query for PostgreSQL
+      connection-test-query: SELECT 1
+
+  # ── Redis / Cache ───────────────────────────────────────────────────
+  cache:
+    type: redis
+    redis:
+      # Default TTL for @Cacheable methods (30 days in seconds).
+      # AI insight cache uses this; overridden per cache name in CacheConfig.java.
+      time-to-live: 2592000
+
+  # ── Jackson ────────────────────────────────────────────────────────
+  jackson:
+    # All timestamps as ISO 8601 strings, not Unix epoch numbers.
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+
+# ── Server ────────────────────────────────────────────────────────────
+server:
+  port: 8080
+  # Compress HTTP responses for text/json content types.
+  compression:
+    enabled: true
+    mime-types: application/json,application/javascript,text/css,text/plain
+    min-response-size: 1024
+  # Forward headers trust — required for Railway's reverse proxy.
+  forward-headers-strategy: framework
+  error:
+    # Never include stack traces in error responses (even in dev — use logs).
+    include-stacktrace: never
+    include-message: always
+
+# ── Actuator ──────────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        # Only expose health — info is a bonus.
+        # Metrics and env are never exposed publicly.
+        include: health,info
+  endpoint:
+    health:
+      # never: don't reveal component details in the HTTP response.
+      # Railway health checks only need a 200 response code.
+      show-details: never
+      show-components: never
+  # Sentry integration via actuator — allows health check to include Sentry status.
+  health:
+    defaults:
+      enabled: true
+
+# ── Sentry ────────────────────────────────────────────────────────────
+sentry:
+  dsn: ${SENTRY_DSN:}
+  # Only send events for ERROR and above in production.
+  # Set to DEBUG in dev profile for local testing if needed.
+  minimum-event-level: error
+  traces-sample-rate: 0.2
+  environment: ${SPRING_PROFILES_ACTIVE:dev}
+
+# ── Reflect application properties ────────────────────────────────────
+# Bound to com.reflect.config.ReflectProperties via @ConfigurationProperties.
+reflect:
+
+  jwt:
+    # RS256 asymmetric key pair.
+    # Generate locally:
+    #   openssl genrsa -out private.pem 2048
+    #   openssl rsa -in private.pem -pubout -out public.pem
+    # Store the full PEM content (including headers) as the env var value.
+    # In Railway: set as multiline env var.
+    private-key: ${JWT_PRIVATE_KEY}
+    public-key: ${JWT_PUBLIC_KEY}
+    # Access token: 1 hour. Refresh token: 30 days.
+    access-token-expiry-seconds: 3600
+    refresh-token-expiry-seconds: 2592000
+
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY}
+    base-url: https://api.anthropic.com
+    api-version: "2023-06-01"
+    # Phase 1-2: Haiku for monthly, Sonnet for quarterly.
+    # Phase 3: InsightSynthesisAgent upgrades monthly to Sonnet.
+    model-haiku: claude-haiku-4-5-20251001
+    model-sonnet: claude-sonnet-4-6
+    # Timeout for Claude API calls (seconds). Jobs handle their own retry logic.
+    timeout-seconds: 60
+    # Maximum tokens for each report type.
+    max-tokens-monthly-insight: 1200
+    max-tokens-quarterly-insight: 1500
+    max-tokens-nudge: 100
+    max-tokens-interpersonal-classify: 10
+
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+    # Price IDs from Stripe Dashboard — set in Railway env vars.
+    price-id-monthly: ${STRIPE_PRICE_MONTHLY}
+    price-id-annual: ${STRIPE_PRICE_ANNUAL}
+
+  sendgrid:
+    api-key: ${SENDGRID_API_KEY}
+    from-email: hello@reflect.app
+    from-name: Reflect
+    # Dynamic template IDs — create templates in SendGrid dashboard.
+    template-welcome: ${SENDGRID_TEMPLATE_WELCOME:d-placeholder}
+    template-sunday-reminder: ${SENDGRID_TEMPLATE_REMINDER:d-placeholder}
+    template-monthly-digest: ${SENDGRID_TEMPLATE_DIGEST:d-placeholder}
+    template-nudge: ${SENDGRID_TEMPLATE_NUDGE:d-placeholder}
+    template-billing-alert: ${SENDGRID_TEMPLATE_BILLING:d-placeholder}
+    template-password-reset: ${SENDGRID_TEMPLATE_RESET:d-placeholder}
+    template-email-verify: ${SENDGRID_TEMPLATE_VERIFY:d-placeholder}
+
+  free-tier:
+    # Maximum check-in entries before paywall is triggered.
+    # Q1 resolved: 4 entries. Do not change without a PRD update.
+    max-check-ins: 4
+
+  reminder:
+    # Default reminder time for new users (local time).
+    # Q4 resolved: Sunday 09:00. Configurable per user in Settings.
+    default-time: "09:00"
+    default-day: SUNDAY
+
+  agent:
+    # Minimum entries before PatternSentinelAgent activates (Q9 open).
+    # Defaulting to 4 (same as free tier limit) — revisit post Phase 2 beta.
+    min-entries-for-pattern: 4
+    # signal_strength threshold above which NudgeAgent fires.
+    nudge-strength-threshold: 7
+    # Minimum days between nudges per user.
+    nudge-cooldown-days: 7
+    # Minimum signal_moment word count before AVOIDANCE pattern fires.
+    avoidance-word-count-threshold: 30
+
+  mcp:
+    # Rate limit: maximum MCP tool calls per user per hour.
+    rate-limit-per-hour: 60
+
+  security:
+    # Bcrypt cost factor. Recalibrate if hashing takes > 500ms on Railway.
+    bcrypt-strength: 12
+    # Maximum failed login attempts before account lockout.
+    max-login-attempts: 5
+    # Account lockout duration in minutes.
+    lockout-minutes: 15
+    # Password reset token TTL in hours.
+    reset-token-ttl-hours: 24
+    # Email verification token TTL in hours.
+    verify-token-ttl-hours: 48
+    # API key rotation recommendation in days (shown in UI, not enforced).
+    api-key-rotation-days: 90
+
+# ── Logging defaults ──────────────────────────────────────────────────
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  level:
+    root: WARN
+    com.reflect: INFO
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+    org.flywaydb: INFO
+    org.hibernate.SQL: WARN

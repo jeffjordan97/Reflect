@@ -1,0 +1,89 @@
+# application-prod.yml
+# ── Production profile ────────────────────────────────────────────────
+# Active when: SPRING_PROFILES_ACTIVE=prod
+# Platform: Railway (API) + Neon (PostgreSQL) + Upstash (Redis) + Vercel (frontend)
+#
+# All secrets are set as Railway environment variables.
+# NEVER commit actual secret values to this file.
+# This file contains only structural config — no secrets.
+#
+# Neon connection string:
+#   Use the JDBC URL format from Neon dashboard (includes SSL params).
+#   Format: jdbc:postgresql://ep-xxx.eu-west-2.aws.neon.tech/reflect?sslmode=require
+#   Set as DATABASE_URL env var in Railway.
+#
+# Upstash Redis URL:
+#   Format: rediss://default:<token>@<host>.upstash.io:<port>
+#   The 'rediss://' prefix (double-s) signals TLS — Lettuce handles this natively.
+#   Set as REDIS_URL env var in Railway.
+
+spring:
+
+  # ── Datasource — Neon PostgreSQL ────────────────────────────────────
+  datasource:
+    url: ${DATABASE_URL}
+    # Neon includes credentials in the connection string URL.
+    # username and password are NOT set separately.
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      # Neon serverless can close idle connections — this keeps them alive.
+      keepalive-time: 60000
+      connection-test-query: SELECT 1
+
+  # ── Redis — Upstash (TLS) ──────────────────────────────────────────
+  data:
+    redis:
+      url: ${REDIS_URL}
+      # Upstash requires TLS. Lettuce auto-detects rediss:// and enables SSL.
+      # No additional SSL configuration required.
+      timeout: 5000ms
+      connect-timeout: 3000ms
+
+  # ── Flyway — production migrations only ────────────────────────────
+  flyway:
+    # IMPORTANT: classpath:db/seed is NOT included here.
+    # V2__dev_seed_data.sql must never run in production.
+    locations: classpath:db/migration
+    # Fail fast if migration checksum doesn't match — never auto-repair.
+    validate-on-migrate: true
+
+  # ── JPA ────────────────────────────────────────────────────────────
+  jpa:
+    show-sql: false
+
+# ── Sentry ────────────────────────────────────────────────────────────
+sentry:
+  dsn: ${SENTRY_DSN}
+  environment: production
+  traces-sample-rate: 0.1
+  minimum-event-level: error
+
+# ── Reflect production overrides ──────────────────────────────────────
+reflect:
+  security:
+    # Full bcrypt cost in production.
+    bcrypt-strength: 12
+
+  anthropic:
+    # Phase 3: InsightSynthesisAgent uses Sonnet for monthly reports.
+    # Phase 1-2: monthly uses Haiku (lower cost, adequate quality).
+    model-haiku: claude-haiku-4-5-20251001
+    model-sonnet: claude-sonnet-4-6
+
+# ── Logging — production ──────────────────────────────────────────────
+# Railway streams logs — no file appender needed.
+# Sentry captures ERROR-level events automatically.
+logging:
+  level:
+    root: WARN
+    com.reflect: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+    org.flywaydb: INFO
+  # Structured JSON logging for Railway log viewer / Papertrail export.
+  # Requires logstash-logback-encoder dependency if you want full JSON.
+  # For now, plain format is fine — Railway's log viewer is readable.

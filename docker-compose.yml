@@ -1,0 +1,74 @@
+services:
+
+  # ── PostgreSQL 15 ────────────────────────────────────────────────────
+  # Mirrors Neon (PostgreSQL 15) as closely as possible.
+  # Connection: jdbc:postgresql://localhost:5432/reflect_dev
+  # Credentials match application-dev.yml defaults.
+  postgres:
+    image: postgres:15-alpine
+    container_name: reflect-postgres
+    environment:
+      POSTGRES_DB:       reflect_dev
+      POSTGRES_USER:     reflect
+      POSTGRES_PASSWORD: reflect
+    ports:
+      - "5432:5432"
+    volumes:
+      - reflect-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reflect -d reflect_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - reflect-network
+
+  # ── Redis 7 ──────────────────────────────────────────────────────────
+  # Mirrors Upstash Redis 7 for local development.
+  # No TLS locally (Upstash uses rediss:// in prod — handled by application-prod.yml).
+  # Connection: redis://localhost:6379
+  redis:
+    image: redis:7-alpine
+    container_name: reflect-redis
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"
+    volumes:
+      - reflect-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - reflect-network
+
+  # ── MailHog (local email testing) ────────────────────────────────────
+  # Catches all outbound email locally — no real emails sent during dev.
+  # Web UI at http://localhost:8025 to inspect sent emails.
+  # SendGrid is replaced by SMTP to MailHog in the dev profile.
+  # Remove this service if you prefer to use SendGrid sandbox mode instead.
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: reflect-mailhog
+    ports:
+      - "1025:1025"   # SMTP — configure spring.mail.host=localhost, port=1025 in dev
+      - "8025:8025"   # Web UI for inspecting sent emails
+    networks:
+      - reflect-network
+
+# ── Volumes ───────────────────────────────────────────────────────────
+# Named volumes persist data across docker-compose down/up cycles.
+# Use 'docker-compose down -v' to wipe and start fresh.
+volumes:
+  reflect-postgres-data:
+    driver: local
+  reflect-redis-data:
+    driver: local
+
+# ── Network ───────────────────────────────────────────────────────────
+networks:
+  reflect-network:
+    driver: bridge

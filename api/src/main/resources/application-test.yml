@@ -1,0 +1,83 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:15-alpine:///reflect_test
+    username: reflect
+    password: reflect
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  data:
+    redis:
+      repositories:
+        enabled: false
+  cache:
+    type: none
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+sentry:
+  dsn:
+  enabled: false
+
+reflect:
+  jwt:
+    private-key: ${JWT_PRIVATE_KEY:}
+    public-key: ${JWT_PUBLIC_KEY:}
+    access-token-expiry-seconds: 3600
+    refresh-token-expiry-seconds: 86400
+  security:
+    bcrypt-strength: 4
+    max-login-attempts: 5
+    lockout-minutes: 15
+    reset-token-ttl-hours: 24
+    verify-token-ttl-hours: 48
+    api-key-rotation-days: 90
+  anthropic:
+    api-key: test-placeholder
+    base-url: https://api.anthropic.com
+    api-version: "2023-06-01"
+    model-haiku: test-model
+    model-sonnet: test-model
+    timeout-seconds: 10
+    max-tokens-monthly-insight: 100
+    max-tokens-quarterly-insight: 100
+    max-tokens-nudge: 100
+    max-tokens-interpersonal-classify: 10
+  stripe:
+    secret-key: sk_test_placeholder
+    webhook-secret: whsec_placeholder
+    price-id-monthly: price_test
+    price-id-annual: price_test
+  sendgrid:
+    api-key: test-placeholder
+    from-email: test@reflect.app
+    from-name: Reflect Test
+    template-welcome: d-test
+    template-sunday-reminder: d-test
+    template-monthly-digest: d-test
+    template-nudge: d-test
+    template-billing-alert: d-test
+    template-password-reset: d-test
+    template-email-verify: d-test
+  free-tier:
+    max-check-ins: 4
+  reminder:
+    default-time: "09:00"
+    default-day: SUNDAY
+  agent:
+    min-entries-for-pattern: 4
+    nudge-strength-threshold: 7
+    nudge-cooldown-days: 7
+    avoidance-word-count-threshold: 30
+  mcp:
+    rate-limit-per-hour: 60
+
+logging:
+  level:
+    root: WARN
+    com.reflect: DEBUG

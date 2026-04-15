@@ -1,0 +1,96 @@
+# application-dev.yml
+# ── Local development profile ─────────────────────────────────────────
+# Active when: SPRING_PROFILES_ACTIVE=dev
+# Requires: docker-compose up (postgres + redis + mailhog)
+#
+# Secrets with no local default are marked ${VAR:dev-placeholder}.
+# Real values are set in .env.local (git-ignored).
+# See .env.local.example for the full list.
+
+spring:
+
+  # ── Datasource — local Docker Compose Postgres ─────────────────────
+  datasource:
+    url: jdbc:postgresql://localhost:5432/reflect_dev
+    username: reflect
+    password: reflect
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+
+  # ── Flyway — include dev seed data (V2) ────────────────────────────
+  # V2__dev_seed_data.sql creates one Pro user + 6 check-ins + insights.
+  # NEVER include classpath:db/seed in production profile.
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed
+
+  # ── Redis — local Docker Compose Redis (no TLS) ────────────────────
+  data:
+    redis:
+      url: redis://localhost:6379
+
+  # ── JPA — enable SQL logging in dev ────────────────────────────────
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# ── Dev-only mail config (MailHog) ───────────────────────────────────
+# All emails are caught by MailHog — nothing reaches real inboxes.
+# View sent emails at http://localhost:8025
+# Comment this block if using SendGrid sandbox mode instead.
+spring.mail:
+  host: localhost
+  port: 1025
+  properties:
+    mail.smtp.auth: false
+    mail.smtp.starttls.enable: false
+
+# ── Sentry — disable in local dev ────────────────────────────────────
+sentry:
+  dsn:   # Empty string disables Sentry
+  enabled: false
+
+# ── Reflect dev overrides ─────────────────────────────────────────────
+reflect:
+
+  jwt:
+    # Dev keys — generate once with openssl and store in .env.local.
+    # Use the placeholder only if you don't need JWT to work (e.g. schema testing).
+    private-key: ${JWT_PRIVATE_KEY:dev-rsa-private-key-placeholder}
+    public-key: ${JWT_PUBLIC_KEY:dev-rsa-public-key-placeholder}
+    # Longer expiry in dev — avoids constant re-auth during testing.
+    access-token-expiry-seconds: 86400
+
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY:sk-ant-dev-placeholder}
+    # Use Haiku for all calls in dev to minimise API costs during testing.
+    model-sonnet: claude-haiku-4-5-20251001
+
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_placeholder}
+    price-id-monthly: ${STRIPE_PRICE_MONTHLY:price_test_monthly}
+    price-id-annual: ${STRIPE_PRICE_ANNUAL:price_test_annual}
+
+  free-tier:
+    # Lower limit in dev to test the paywall without creating 4 entries.
+    # Reset to 4 before staging deploy.
+    max-check-ins: 4
+
+  security:
+    # Reduce bcrypt cost in dev — faster test execution.
+    # NEVER reduce this in production.
+    bcrypt-strength: 4
+
+# ── Logging — verbose in dev ──────────────────────────────────────────
+logging:
+  level:
+    root: INFO
+    com.reflect: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.flywaydb: DEBUG

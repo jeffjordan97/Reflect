@@ -1,0 +1,41 @@
+# Java / Maven
+api/target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Environment
+.env
+.env.local
+*.pem
+
+# Next.js
+web/.next/
+web/out/
+web/node_modules/
+
+# Node
+node_modules/
+
+# Superpowers brainstorm sessions
+.superpowers/
+
+# Docker volumes
+data/
+
+# Test output
+api/target/surefire-reports/
+api/target/failsafe-reports/
