@@ -4,6 +4,10 @@
 #
 # All secrets set as Railway environment variables.
 
+server:
+  # Railway sets PORT dynamically — bind to it. Falls back to 8080 locally.
+  port: ${PORT:8080}
+
 spring:
   datasource:
     url: ${DATABASE_URL}
