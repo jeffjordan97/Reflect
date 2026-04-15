@@ -79,10 +79,12 @@ docker-compose up -d
 cd api
 export JWT_PRIVATE_KEY="$(cat private.pem)"
 export JWT_PUBLIC_KEY="$(cat public.pem)"
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+./mvn-local.sh spring-boot:run -Dspring-boot.run.profiles=dev
 # API at http://localhost:8080
 # Health check: http://localhost:8080/actuator/health
 ```
+
+> **Note:** `mvn-local.sh` bypasses `~/.m2/settings.xml` (which may point at a corporate Maven proxy) and resolves dependencies directly from Maven Central. Use it instead of `mvn` for all local commands.
 
 Flyway runs automatically on startup and creates the `users`, `refresh_tokens`, and `check_ins` tables.
 
@@ -103,10 +105,10 @@ The Next.js dev server proxies `/api/*` requests to the Spring Boot backend.
 cd api
 
 # Unit tests only (fast — no Docker required)
-mvn test
+./mvn-local.sh test
 
 # Full test suite including integration tests (requires Docker for Testcontainers)
-mvn verify
+./mvn-local.sh verify
 ```
 
 ---
