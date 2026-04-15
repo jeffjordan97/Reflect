@@ -25,7 +25,8 @@ public class JwtProvider {
     private final PublicKey publicKey;
     private final long accessTokenExpiryMs;
 
-    public JwtProvider(ReflectProperties.Jwt jwtProperties) {
+    public JwtProvider(ReflectProperties properties) {
+        ReflectProperties.Jwt jwtProperties = properties.jwt();
         this.privateKey = parsePrivateKey(jwtProperties.privateKey());
         this.publicKey = parsePublicKey(jwtProperties.publicKey());
         this.accessTokenExpiryMs = jwtProperties.accessTokenExpirySeconds() * 1000L;

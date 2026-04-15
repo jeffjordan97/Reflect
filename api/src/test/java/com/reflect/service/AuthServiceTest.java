@@ -40,9 +40,12 @@ class AuthServiceTest {
     @BeforeEach
     void setUp() {
         ReflectProperties.Jwt jwtProps = new ReflectProperties.Jwt("", "", 3600, 604800);
+        ReflectProperties props = new ReflectProperties(
+                jwtProps, null, null, null, null, null, null, null, null
+        );
         authService = new AuthService(
                 userRepository, refreshTokenRepository,
-                jwtProvider, passwordEncoder, jwtProps
+                jwtProvider, passwordEncoder, props
         );
     }
 

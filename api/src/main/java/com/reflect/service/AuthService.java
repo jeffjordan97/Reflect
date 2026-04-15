@@ -35,13 +35,13 @@ public class AuthService {
             RefreshTokenRepository refreshTokenRepository,
             JwtProvider jwtProvider,
             PasswordEncoder passwordEncoder,
-            ReflectProperties.Jwt jwtProperties
+            ReflectProperties properties
     ) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.jwtProvider = jwtProvider;
         this.passwordEncoder = passwordEncoder;
-        this.refreshTokenExpirySeconds = jwtProperties.refreshTokenExpirySeconds();
+        this.refreshTokenExpirySeconds = properties.jwt().refreshTokenExpirySeconds();
     }
 
     public record AuthResult(AuthResponse authResponse, String rawRefreshToken) {}

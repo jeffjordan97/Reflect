@@ -29,7 +29,10 @@ class JwtProviderTest {
         ReflectProperties.Jwt jwtProps = new ReflectProperties.Jwt(
                 privateKeyPem, publicKeyPem, 3600, 86400
         );
-        jwtProvider = new JwtProvider(jwtProps);
+        ReflectProperties props = new ReflectProperties(
+                jwtProps, null, null, null, null, null, null, null, null
+        );
+        jwtProvider = new JwtProvider(props);
     }
 
     @Test
