@@ -26,8 +26,46 @@ sentry:
 
 reflect:
   jwt:
-    private-key: ${JWT_PRIVATE_KEY:}
-    public-key: ${JWT_PUBLIC_KEY:}
+    # Static test keys — NOT used in any environment other than tests.
+    private-key: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDIfuPLCqp42FCe
+      P+f2JDrOTgwi+OoClZrHayQvsCOgkJvvvqCVq+rYWHIicuj43826lsROTpUSvpCE
+      cQ8snUJKWNwfFpXPOdLcv5E5jrjEl3v+RK4b2Q/WFGx1L4yXV2VzJBExKEYBznF8
+      xY/SXUx6F/uWGX661J30r4S3gMIdeIZWLwNHOHls77CtN3kdfhFAUtuj0Tsdk5ju
+      ukKkGTk96EmOqbmru6e/Gtk+SS7Ytpq5kIDYqYoy/+CldbOpXRI2aTx4xdkcFGVg
+      DUm408kYFB3azpbkBRfT4Gcn+xNfb3MeRuCkeJvlGes+NjK3JqJpvdvin0olzm5L
+      LVACYJuzAgMBAAECggEAO3NsxmMmQ2kZFqOqe5Eoos3/yUr30MZdu+4oL7/SAKWA
+      p6ll4pu0qmwng9GBBXMPhNl54iJpD8LUBYGk1zzWUEdjFhDTYTwrK2veeyu33Atz
+      J+VjnzxQ9tDdjC4KSUIQAgFa27GueJCnlDDcwasKp1V/M3Xh3zJ2l/yHpQYYCTaS
+      YNXszxkKYmMIDgtdkU5teShHpxXi+SeY0JCFhye+3X/xk5tNthmi6tSe6RFd34Y0
+      mwt1mF3PB+lMuesfDz074AjzO0pUkEQU164LrLUN7u9bjOCvVfdAyvuDKC+4mYmX
+      mInW4oS2FCjBhux2HJqlAlkasBRV+eWTjiYWWcs4IQKBgQDrogDdBteUOnMqiDIE
+      wtTKfGptJyS61JoQfspeESRgGzbe6WaIF6Pvt/YzGsdmrtEA2dggXlLcUUNMStwr
+      aW91FrBV7UOkTYFCriSbhk8xTHdnOAz1+K9n/0tJ5nxej6S2XL0cQTISKEMMJ4Ub
+      kal6IahYOyN3GsMjjwTtfz3JkQKBgQDZ02JcTUpcwQSS4eI/N3mXZHFsy8X9sihJ
+      NzUrwSpVCrumv7QFLbeQw8sWAws8ELVK0Q6q9oUBTMRHD/Kci5e8AxyexdH12zMZ
+      egdN2Y+jFc0h+FdeW7x0zAdkbEHz/PzSM2ClrPyFiXppN3euEvGhCviIPHZN0RmU
+      Rd1eVnvPAwKBgGQ+apGdfI9CAobApE7kODTgk0JWmcil89k6p4s3TbtZOJHCx+zz
+      6bltEN+S7+veSWpMQycaGbRDGhdV7a7GTzWH7oLPyqwWkPw2K7rCe+RkPJP8A3+N
+      Sco7kOMinBx6jb9LWuSvU8bnvAZqtbUR1gDwWrcWibL8/rGdAaKsNDQRAoGATH3k
+      npEtueC2IHZeIuDyO+2zvwbX4jz71Koka9cLbI22U9oh92eUfKuk13f+K/uaDknX
+      osWq80fn7SR2h+6lPArDtCW3k2SET0AA7J+nxxdSz8kLtUD1rvYu6l7x0iJXDeGo
+      4MUccDBU4jnuNxzD6U+W8xB4Yt844k6ebBBmrc0CgYEA4CRKAlJEa5vxPQ9IGeqK
+      ehFweDXzDABfl9ly7FLEHTUd6pyA8O5CUEXTmBwC19ciokphja6zPSeCLfYgoebN
+      pE3fZdfAJDFc4gAIwXq+e3+6ARYxuBUv6R4u66jOU33lrkCcicqed5jZlNsLyoyU
+      w4sMhKLZLesbG5pQCSkSBAQ=
+      -----END PRIVATE KEY-----
+    public-key: |
+      -----BEGIN PUBLIC KEY-----
+      MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyH7jywqqeNhQnj/n9iQ6
+      zk4MIvjqApWax2skL7AjoJCb776glavq2FhyInLo+N/NupbETk6VEr6QhHEPLJ1C
+      SljcHxaVzznS3L+ROY64xJd7/kSuG9kP1hRsdS+Ml1dlcyQRMShGAc5xfMWP0l1M
+      ehf7lhl+utSd9K+Et4DCHXiGVi8DRzh5bO+wrTd5HX4RQFLbo9E7HZOY7rpCpBk5
+      PehJjqm5q7unvxrZPkku2LaauZCA2KmKMv/gpXWzqV0SNmk8eMXZHBRlYA1JuNPJ
+      GBQd2s6W5AUX0+BnJ/sTX29zHkbgpHib5RnrPjYytyaiab3b4p9KJc5uSy1QAmCb
+      swIDAQAB
+      -----END PUBLIC KEY-----
     access-token-expiry-seconds: 3600
     refresh-token-expiry-seconds: 86400
   security:
