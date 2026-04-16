@@ -52,7 +52,7 @@ export default function CheckInWizard({ existing }: WizardProps) {
     };
   }
 
-  async function saveProgress() {
+  async function saveProgress(): Promise<string | null> {
     setIsSaving(true);
     try {
       const request = buildRequest();
@@ -62,26 +62,27 @@ export default function CheckInWizard({ existing }: WizardProps) {
           body: JSON.stringify(request),
         });
         setCheckInId(created.id);
+        return created.id;
       } else {
         await apiFetch<CheckInResponse>(`/api/check-ins/${checkInId}`, {
           method: "PUT",
           body: JSON.stringify(request),
         });
+        return checkInId;
       }
     } catch {
-      // Save failed — user can retry
+      return null;
     } finally {
       setIsSaving(false);
     }
   }
 
   async function handleNext() {
-    await saveProgress();
+    const savedId = await saveProgress();
     if (step < STEPS.length - 1) {
       setStep(step + 1);
-    } else {
-      router.push("/check-in");
-      router.refresh();
+    } else if (savedId) {
+      router.push(`/history/${savedId}`);
     }
   }
 
