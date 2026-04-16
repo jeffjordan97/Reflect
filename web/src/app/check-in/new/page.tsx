@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import type { CheckInResponse } from "@/lib/types";
 import CheckInWizard from "@/components/CheckInWizard";
+import Spinner from "@/components/Spinner";
 
 export default function NewCheckInPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -23,7 +24,11 @@ export default function NewCheckInPage() {
   }, [authLoading, user, router]);
 
   if (authLoading || isLoading) {
-    return <div className="mx-auto w-full max-w-xl px-4 py-8"><p className="text-sm text-gray-400">Loading...</p></div>;
+    return (
+      <div className="mx-auto w-full max-w-xl px-4 py-8">
+        <Spinner />
+      </div>
+    );
   }
   return <CheckInWizard existing={existing} />;
 }

@@ -3,6 +3,7 @@
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Spinner from "@/components/Spinner";
 
 export default function RootPage() {
   const { user, isLoading } = useAuth();
@@ -16,7 +17,7 @@ export default function RootPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <p className="text-sm text-gray-400">Loading...</p>
+      <Spinner />
     </div>
   );
 }

@@ -45,6 +45,11 @@ sentry:
 
 # Production overrides
 reflect:
+  cookie:
+    # Cross-site cookies (frontend on Vercel, API on Railway) require these
+    secure: true
+    same-site: None
+
   security:
     bcrypt-strength: 12
 

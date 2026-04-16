@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api";
 import type { CheckInResponse } from "@/lib/types";
 import CheckInWizard from "@/components/CheckInWizard";
 import CheckInDetail from "@/components/CheckInDetail";
+import Spinner from "@/components/Spinner";
 
 export default function CheckInPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -25,7 +26,11 @@ export default function CheckInPage() {
   }, [authLoading, user, router]);
 
   if (authLoading || isLoading) {
-    return <div className="mx-auto w-full max-w-xl px-4 py-8"><p className="text-sm text-gray-400">Loading...</p></div>;
+    return (
+      <div className="mx-auto w-full max-w-xl px-4 py-8">
+        <Spinner />
+      </div>
+    );
   }
   if (notFound) return <CheckInWizard />;
   if (checkIn && !checkIn.completed) return <CheckInWizard existing={checkIn} />;
