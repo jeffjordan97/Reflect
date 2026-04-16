@@ -96,20 +96,13 @@ export default function StreakBadge() {
         <div className="flex items-center gap-3">
           <FlameIcon streak={streak} />
           <div className="flex flex-col">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-3xl font-bold tracking-tight text-gray-900">
-                {streak}
-              </span>
-              <span className="text-sm font-medium text-gray-500">
-                week{streak !== 1 ? "s" : ""}
-              </span>
-            </div>
+            <span className="text-3xl font-bold tracking-tight text-gray-900">
+              {streak}
+            </span>
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-400">
-                {streak * 7} days
+                {streak} week{streak !== 1 ? "s" : ""} streak
               </span>
-              <span className="text-xs text-gray-300">·</span>
-              <span className="text-xs text-gray-400">streak</span>
               {milestone && (
                 <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
                   {milestone}
