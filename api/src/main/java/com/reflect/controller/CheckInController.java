@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -62,6 +63,12 @@ public class CheckInController {
     ) {
         CheckIn checkIn = checkInService.create(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(CheckInResponse.from(checkIn));
+    }
+
+    @GetMapping("/streak")
+    public ResponseEntity<Map<String, Integer>> getStreak(@AuthenticationPrincipal UUID userId) {
+        int streak = checkInService.getStreak(userId);
+        return ResponseEntity.ok(Map.of("streak", streak));
     }
 
     @PutMapping("/{id}")

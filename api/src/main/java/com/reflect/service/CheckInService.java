@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.List;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Optional;
 import java.util.UUID;
@@ -71,6 +72,32 @@ public class CheckInService {
     @Transactional(readOnly = true)
     public Page<CheckIn> list(UUID userId, Pageable pageable) {
         return checkInRepository.findByUserIdOrderByWeekStartDesc(userId, pageable);
+    }
+
+    /**
+     * Count consecutive completed weeks going backwards from the current week.
+     * A streak breaks on any missing Sunday.
+     */
+    @Transactional(readOnly = true)
+    public int getStreak(UUID userId) {
+        List<LocalDate> weeks = checkInRepository.findCompletedWeekStartsByUserIdDesc(userId);
+        if (weeks.isEmpty()) return 0;
+
+        LocalDate expected = currentWeekSunday();
+        int streak = 0;
+
+        for (LocalDate week : weeks) {
+            if (week.equals(expected)) {
+                streak++;
+                expected = expected.minusWeeks(1);
+            } else if (week.isBefore(expected)) {
+                // Gap found — streak is broken
+                break;
+            }
+            // week.isAfter(expected) shouldn't happen with DESC ordering, skip
+        }
+
+        return streak;
     }
 
     static LocalDate currentWeekSunday() {

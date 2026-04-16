@@ -8,6 +8,7 @@ import type { CheckInResponse } from "@/lib/types";
 import CheckInWizard from "@/components/CheckInWizard";
 import CheckInDetail from "@/components/CheckInDetail";
 import Spinner from "@/components/Spinner";
+import StreakBadge from "@/components/StreakBadge";
 
 export default function CheckInPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -34,6 +35,13 @@ export default function CheckInPage() {
   }
   if (notFound) return <CheckInWizard />;
   if (checkIn && !checkIn.completed) return <CheckInWizard existing={checkIn} />;
-  if (checkIn && checkIn.completed) return <CheckInDetail checkIn={checkIn} />;
+  if (checkIn && checkIn.completed) return (
+    <>
+      <div className="mx-auto w-full max-w-xl px-4 pt-8">
+        <StreakBadge />
+      </div>
+      <CheckInDetail checkIn={checkIn} />
+    </>
+  );
   return <CheckInWizard />;
 }

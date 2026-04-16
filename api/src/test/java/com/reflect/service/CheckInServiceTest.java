@@ -162,4 +162,38 @@ class CheckInServiceTest {
 
         verify(insightService, never()).generateFor(any());
     }
+
+    // ── Streak ──────────────────────────────────────────────────────────
+
+    @Test
+    void getStreak_returnsZeroWithNoCheckIns() {
+        when(checkInRepository.findCompletedWeekStartsByUserIdDesc(userId)).thenReturn(List.of());
+        assertEquals(0, checkInService.getStreak(userId));
+    }
+
+    @Test
+    void getStreak_countsConsecutiveWeeks() {
+        LocalDate sunday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+        when(checkInRepository.findCompletedWeekStartsByUserIdDesc(userId))
+                .thenReturn(List.of(sunday, sunday.minusWeeks(1), sunday.minusWeeks(2)));
+        assertEquals(3, checkInService.getStreak(userId));
+    }
+
+    @Test
+    void getStreak_breaksOnGap() {
+        LocalDate sunday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+        // Current week + 2 weeks ago (gap at week -1)
+        when(checkInRepository.findCompletedWeekStartsByUserIdDesc(userId))
+                .thenReturn(List.of(sunday, sunday.minusWeeks(2)));
+        assertEquals(1, checkInService.getStreak(userId));
+    }
+
+    @Test
+    void getStreak_returnsZeroIfCurrentWeekMissing() {
+        LocalDate sunday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+        // Only last week, not current
+        when(checkInRepository.findCompletedWeekStartsByUserIdDesc(userId))
+                .thenReturn(List.of(sunday.minusWeeks(1)));
+        assertEquals(0, checkInService.getStreak(userId));
+    }
 }
