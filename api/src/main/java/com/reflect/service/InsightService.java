@@ -3,6 +3,7 @@ package com.reflect.service;
 import com.reflect.config.ReflectProperties;
 import com.reflect.domain.CheckIn;
 import com.reflect.domain.Insight;
+import com.reflect.exception.ApiException;
 import com.reflect.repository.CheckInRepository;
 import com.reflect.repository.InsightRepository;
 import org.slf4j.Logger;
@@ -109,6 +110,20 @@ public class InsightService {
     @Transactional(readOnly = true)
     public Optional<Insight> getByCheckIn(UUID checkInId, UUID userId) {
         return insightRepository.findByCheckInIdAndUserId(checkInId, userId);
+    }
+
+    /**
+     * Manually trigger insight generation for a check-in. Verifies the caller
+     * owns the check-in, then fires the async generation.
+     * Used for backfilling insights on pre-existing check-ins.
+     */
+    public void requestGeneration(UUID checkInId, UUID userId) {
+        CheckIn checkIn = checkInRepository.findByIdAndUserId(checkInId, userId)
+                .orElseThrow(() -> ApiException.notFound("Check-in not found"));
+        if (!checkIn.isCompleted()) {
+            throw ApiException.badRequest("Check-in is not completed yet");
+        }
+        generateFor(checkInId);
     }
 
     private String buildUserMessage(CheckIn checkIn) {
