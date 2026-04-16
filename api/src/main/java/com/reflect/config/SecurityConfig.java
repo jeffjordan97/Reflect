@@ -25,15 +25,18 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
+    private final RateLimitFilter rateLimitFilter;
     private final int bcryptStrength;
     private final String corsAllowedOrigin;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtFilter,
+            RateLimitFilter rateLimitFilter,
             ReflectProperties properties,
             @Value("${reflect.cors.allowed-origin:http://localhost:3000}") String corsAllowedOrigin
     ) {
         this.jwtFilter = jwtFilter;
+        this.rateLimitFilter = rateLimitFilter;
         this.bcryptStrength = properties.security().bcryptStrength();
         this.corsAllowedOrigin = corsAllowedOrigin;
     }
@@ -50,6 +53,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint()))
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
