@@ -8,8 +8,6 @@ export default function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  if (!user) return null;
-
   async function handleLogout() {
     await logout();
     router.push("/login");
@@ -18,14 +16,32 @@ export default function Header() {
   return (
     <header className="border-b border-gray-200 bg-white">
       <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
-        <Link href="/check-in" className="text-lg font-semibold tracking-tight text-gray-900">Reflect</Link>
-        <nav className="flex items-center gap-6">
-          <Link href="/history" className="text-sm text-gray-500 hover:text-gray-900">History</Link>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500">{user.displayName}</span>
-            <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-gray-900">Sign out</button>
-          </div>
-        </nav>
+        <Link
+          href={user ? "/check-in" : "/"}
+          className="text-lg font-semibold tracking-tight text-gray-900"
+        >
+          Reflect
+        </Link>
+
+        {user && (
+          <nav className="flex items-center gap-6">
+            <Link
+              href="/history"
+              className="text-sm text-gray-500 hover:text-gray-900"
+            >
+              History
+            </Link>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-500">{user.displayName}</span>
+              <button
+                onClick={handleLogout}
+                className="text-sm text-gray-500 hover:text-gray-900"
+              >
+                Sign out
+              </button>
+            </div>
+          </nav>
+        )}
       </div>
     </header>
   );

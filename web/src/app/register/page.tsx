@@ -4,7 +4,6 @@ import { FormEvent, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import AuthLayout from "@/components/AuthLayout";
 import type { ApiError } from "@/lib/types";
 
 interface FieldErrors {
@@ -63,7 +62,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <AuthLayout>
+    <div className="flex items-start justify-center px-4 pt-16 pb-16">
       <div className="w-full max-w-sm">
         <h1 className="text-2xl font-semibold tracking-tight text-center mb-8">
           Create your account
@@ -186,6 +185,6 @@ export default function RegisterPage() {
           </Link>
         </p>
       </div>
-    </AuthLayout>
+    </div>
   );
 }
