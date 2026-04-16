@@ -114,6 +114,10 @@ reflect:
     avoidance-word-count-threshold: 30
   mcp:
     rate-limit-per-hour: 60
+  resend:
+    api-key: test-placeholder
+    from-email: test@reflect.app
+  frontend-url: http://localhost:3000
 
 logging:
   level:

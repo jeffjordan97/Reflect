@@ -27,7 +27,7 @@
         <!-- Dependency versions not managed by Spring Boot parent -->
         <jjwt.version>0.12.6</jjwt.version>
         <stripe.version>26.0.0</stripe.version>
-        <sendgrid.version>4.10.3</sendgrid.version>
+        <resend.version>4.4.0</resend.version>
         <testcontainers.version>1.20.4</testcontainers.version>
         <sentry.version>7.14.0</sentry.version>
         <!-- Jacoco coverage minimum - enforced in CI -->
@@ -124,11 +124,11 @@
             <version>${stripe.version}</version>
         </dependency>
 
-        <!-- SendGrid — transactional email (reminders, digest, nudges) -->
+        <!-- Resend — transactional email (password reset, verification, reminders) -->
         <dependency>
-            <groupId>com.sendgrid</groupId>
-            <artifactId>sendgrid-java</artifactId>
-            <version>${sendgrid.version}</version>
+            <groupId>com.resend</groupId>
+            <artifactId>resend-java</artifactId>
+            <version>${resend.version}</version>
         </dependency>
 
         <!--

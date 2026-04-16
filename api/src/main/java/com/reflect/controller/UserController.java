@@ -1,13 +1,15 @@
 package com.reflect.controller;
 
+import com.reflect.controller.dto.ChangePasswordRequest;
+import com.reflect.controller.dto.UpdateProfileRequest;
 import com.reflect.controller.dto.UserResponse;
 import com.reflect.exception.ApiException;
 import com.reflect.repository.UserRepository;
+import com.reflect.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -16,9 +18,11 @@ import java.util.UUID;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final AuthService authService;
 
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository, AuthService authService) {
         this.userRepository = userRepository;
+        this.authService = authService;
     }
 
     @GetMapping("/me")
@@ -27,5 +31,23 @@ public class UserController {
                 .map(UserResponse::from)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> ApiException.notFound("User not found"));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<UserResponse> updateProfile(
+            @AuthenticationPrincipal UUID userId,
+            @Valid @RequestBody UpdateProfileRequest request
+    ) {
+        var updatedUser = authService.updateProfile(userId, request.displayName());
+        return ResponseEntity.ok(UserResponse.from(updatedUser));
+    }
+
+    @PostMapping("/me/change-password")
+    public ResponseEntity<Void> changePassword(
+            @AuthenticationPrincipal UUID userId,
+            @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        authService.changePassword(userId, request.currentPassword(), request.newPassword());
+        return ResponseEntity.noContent().build();
     }
 }

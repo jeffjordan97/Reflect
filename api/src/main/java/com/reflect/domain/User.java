@@ -21,6 +21,9 @@ public class User {
     @Column(name = "display_name", nullable = false, length = 100)
     private String displayName;
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -33,6 +36,7 @@ public class User {
         this.email = email;
         this.passwordHash = passwordHash;
         this.displayName = displayName;
+        this.emailVerified = false;
     }
 
     @PrePersist
@@ -52,5 +56,8 @@ public class User {
     public String getDisplayName() { return displayName; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public void setDisplayName(String displayName) { this.displayName = displayName; }
 }

@@ -43,7 +43,7 @@ class InsightServiceTest {
                 60, 1200, 1500, 100, 10
         );
         ReflectProperties props = new ReflectProperties(
-                null, anthropic, null, null, null, null, null, null, null
+                null, anthropic, null, null, null, null, null, null, null, null, null
         );
         insightService = new InsightService(insightRepository, checkInRepository, anthropicClient, props);
 

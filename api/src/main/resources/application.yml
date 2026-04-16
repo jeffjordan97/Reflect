@@ -204,6 +204,12 @@ reflect:
     # API key rotation recommendation in days (shown in UI, not enforced).
     api-key-rotation-days: 90
 
+  resend:
+    api-key: ${RESEND_API_KEY:not-configured}
+    from-email: onboarding@resend.dev
+
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+
 # ── Logging defaults ──────────────────────────────────────────────────
 logging:
   pattern:

@@ -28,7 +28,9 @@ public record ReflectProperties(
         Reminder reminder,
         Agent agent,
         Mcp mcp,
-        Security security
+        Security security,
+        Resend resend,
+        String frontendUrl
 ) {
 
     public record Jwt(
@@ -98,5 +100,10 @@ public record ReflectProperties(
             int resetTokenTtlHours,
             int verifyTokenTtlHours,
             int apiKeyRotationDays
+    ) {}
+
+    public record Resend(
+            String apiKey,
+            String fromEmail
     ) {}
 }

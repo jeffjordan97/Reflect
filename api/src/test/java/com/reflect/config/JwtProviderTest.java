@@ -30,7 +30,7 @@ class JwtProviderTest {
                 privateKeyPem, publicKeyPem, 3600, 86400
         );
         ReflectProperties props = new ReflectProperties(
-                jwtProps, null, null, null, null, null, null, null, null
+                jwtProps, null, null, null, null, null, null, null, null, null, null
         );
         jwtProvider = new JwtProvider(props);
     }

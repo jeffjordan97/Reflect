@@ -1,8 +1,7 @@
 package com.reflect.controller;
 
-import com.reflect.controller.dto.AuthResponse;
-import com.reflect.controller.dto.LoginRequest;
-import com.reflect.controller.dto.RegisterRequest;
+import com.reflect.controller.dto.*;
+import com.reflect.exception.ApiException;
 import com.reflect.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,10 +11,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -72,6 +73,33 @@ public class AuthController {
         return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, buildClearCookie().toString())
                 .build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request.email());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.token(), request.newPassword());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<Void> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        authService.verifyEmail(request.token());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Void> resendVerification(@AuthenticationPrincipal UUID userId) {
+        if (userId == null) {
+            throw ApiException.unauthorized("Authentication required");
+        }
+        authService.resendVerification(userId);
+        return ResponseEntity.noContent().build();
     }
 
     private ResponseCookie buildRefreshCookie(String token) {
