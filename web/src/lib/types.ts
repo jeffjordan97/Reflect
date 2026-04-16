@@ -7,6 +7,7 @@ export interface UserResponse {
   id: string;
   email: string;
   displayName: string;
+  emailVerified: boolean;
   createdAt: string;
 }
 
