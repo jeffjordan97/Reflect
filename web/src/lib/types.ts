@@ -32,6 +32,13 @@ export interface CheckInRequest {
   completed?: boolean;
 }
 
+export interface InsightResponse {
+  id: string;
+  checkInId: string;
+  content: string;
+  createdAt: string;
+}
+
 export interface PaginatedResponse<T> {
   content: T[];
   totalElements: number;
