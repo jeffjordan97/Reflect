@@ -22,10 +22,13 @@ public class CheckInService {
 
     private final CheckInRepository checkInRepository;
     private final UserRepository userRepository;
+    private final InsightService insightService;
 
-    public CheckInService(CheckInRepository checkInRepository, UserRepository userRepository) {
+    public CheckInService(CheckInRepository checkInRepository, UserRepository userRepository,
+                          InsightService insightService) {
         this.checkInRepository = checkInRepository;
         this.userRepository = userRepository;
+        this.insightService = insightService;
     }
 
     @Transactional
@@ -45,8 +48,13 @@ public class CheckInService {
     public CheckIn update(UUID checkInId, UUID userId, CheckInRequest request) {
         CheckIn checkIn = checkInRepository.findByIdAndUserId(checkInId, userId)
                 .orElseThrow(() -> ApiException.notFound("Check-in not found"));
+        boolean wasCompleted = checkIn.isCompleted();
         applyFields(checkIn, request);
-        return checkInRepository.save(checkIn);
+        CheckIn saved = checkInRepository.save(checkIn);
+        if (!wasCompleted && saved.isCompleted()) {
+            insightService.generateFor(saved.getId());
+        }
+        return saved;
     }
 
     @Transactional(readOnly = true)

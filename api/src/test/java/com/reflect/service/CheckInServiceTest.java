@@ -32,6 +32,7 @@ class CheckInServiceTest {
 
     @Mock private CheckInRepository checkInRepository;
     @Mock private UserRepository userRepository;
+    @Mock private InsightService insightService;
 
     private CheckInService checkInService;
     private UUID userId;
@@ -39,7 +40,7 @@ class CheckInServiceTest {
 
     @BeforeEach
     void setUp() {
-        checkInService = new CheckInService(checkInRepository, userRepository);
+        checkInService = new CheckInService(checkInRepository, userRepository, insightService);
         userId = UUID.randomUUID();
         user = new User("test@example.com", "hash", "Test User");
     }
@@ -115,5 +116,50 @@ class CheckInServiceTest {
 
         Page<CheckIn> result = checkInService.list(userId, PageRequest.of(0, 10));
         assertEquals(1, result.getTotalElements());
+    }
+
+    @Test
+    void update_triggersInsightGenerationWhenCompletedTransitionsToTrue() {
+        UUID checkInId = UUID.randomUUID();
+        LocalDate sunday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+        CheckIn checkIn = new CheckIn(user, sunday);
+        // starts as completed=false by default
+        var request = new CheckInRequest("Wins", null, null, null, null, true);
+        when(checkInRepository.findByIdAndUserId(checkInId, userId)).thenReturn(Optional.of(checkIn));
+        when(checkInRepository.save(any(CheckIn.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        checkInService.update(checkInId, userId, request);
+
+        verify(insightService).generateFor(any());
+    }
+
+    @Test
+    void update_doesNotTriggerInsightWhenAlreadyCompleted() {
+        UUID checkInId = UUID.randomUUID();
+        LocalDate sunday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+        CheckIn checkIn = new CheckIn(user, sunday);
+        checkIn.setCompleted(true);
+        // already completed, sending completed=true again
+        var request = new CheckInRequest("Updated wins", null, null, null, null, true);
+        when(checkInRepository.findByIdAndUserId(checkInId, userId)).thenReturn(Optional.of(checkIn));
+        when(checkInRepository.save(any(CheckIn.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        checkInService.update(checkInId, userId, request);
+
+        verify(insightService, never()).generateFor(any());
+    }
+
+    @Test
+    void update_doesNotTriggerInsightWhenNotMarkedComplete() {
+        UUID checkInId = UUID.randomUUID();
+        LocalDate sunday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+        CheckIn checkIn = new CheckIn(user, sunday);
+        var request = new CheckInRequest("Wins", null, null, null, null, null);
+        when(checkInRepository.findByIdAndUserId(checkInId, userId)).thenReturn(Optional.of(checkIn));
+        when(checkInRepository.save(any(CheckIn.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        checkInService.update(checkInId, userId, request);
+
+        verify(insightService, never()).generateFor(any());
     }
 }
