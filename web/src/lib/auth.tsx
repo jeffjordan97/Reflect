@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { apiFetch, setAccessToken } from "./api";
+import { apiFetch, refreshAccessToken, setAccessToken } from "./api";
 import type { AuthResponse, UserResponse } from "./types";
 
 interface AuthContextType {
@@ -38,17 +38,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function init() {
       try {
-        const res = await fetch("/api/auth/refresh", {
-          method: "POST",
-          credentials: "include",
-        });
-        if (res.ok) {
-          const data: AuthResponse = await res.json();
-          setAccessToken(data.accessToken);
+        // Use the shared refresh helper so a concurrent apiFetch on page
+        // mount dedupes onto the same in-flight promise (avoids double
+        // refresh which would invalidate the rotated cookie).
+        const token = await refreshAccessToken();
+        if (token) {
           await fetchUser();
         }
-      } catch {
-        // No valid session
       } finally {
         setIsLoading(false);
       }

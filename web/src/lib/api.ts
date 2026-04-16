@@ -1,9 +1,9 @@
-import { AuthResponse, ApiError } from "./types";
+import type { AuthResponse, ApiError } from "./types";
 
 let accessToken: string | null = null;
 let refreshPromise: Promise<string | null> | null = null;
 
-export function setAccessToken(token: string | null) {
+export function setAccessToken(token: string | null): void {
   accessToken = token;
 }
 
@@ -11,31 +11,42 @@ export function getAccessToken(): string | null {
   return accessToken;
 }
 
-async function refreshAccessToken(): Promise<string | null> {
-  try {
-    const res = await fetch("/api/auth/refresh", {
-      method: "POST",
-      credentials: "include",
-    });
-    if (!res.ok) return null;
-    const data: AuthResponse = await res.json();
-    accessToken = data.accessToken;
-    return accessToken;
-  } catch {
-    return null;
-  }
+/**
+ * Refresh the access token from the refresh cookie.
+ * All concurrent callers share the same in-flight promise so we never fire
+ * two refresh requests at once (which would cause the second to 403 because
+ * the first has already rotated the refresh token).
+ */
+export function refreshAccessToken(): Promise<string | null> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch("/api/auth/refresh", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        accessToken = null;
+        return null;
+      }
+      const data: AuthResponse = await res.json();
+      accessToken = data.accessToken;
+      return accessToken;
+    } catch {
+      accessToken = null;
+      return null;
+    }
+  })().finally(() => {
+    refreshPromise = null;
+  });
+
+  return refreshPromise;
 }
 
 async function ensureToken(): Promise<string | null> {
-  if (!accessToken) {
-    if (!refreshPromise) {
-      refreshPromise = refreshAccessToken().finally(() => {
-        refreshPromise = null;
-      });
-    }
-    return refreshPromise;
-  }
-  return accessToken;
+  if (accessToken) return accessToken;
+  return refreshAccessToken();
 }
 
 export async function apiFetch<T>(
