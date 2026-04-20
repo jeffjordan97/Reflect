@@ -89,8 +89,8 @@ reflect:
   stripe:
     secret-key: sk_test_placeholder
     webhook-secret: whsec_placeholder
-    price-id-monthly: price_test
-    price-id-annual: price_test
+    price-id-monthly: price_test_monthly
+    price-id-annual: price_test_annual
   sendgrid:
     api-key: test-placeholder
     from-email: test@reflect.app

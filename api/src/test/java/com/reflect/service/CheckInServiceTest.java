@@ -1,5 +1,6 @@
 package com.reflect.service;
 
+import com.reflect.config.ReflectProperties;
 import com.reflect.controller.dto.CheckInRequest;
 import com.reflect.domain.CheckIn;
 import com.reflect.domain.User;
@@ -40,7 +41,11 @@ class CheckInServiceTest {
 
     @BeforeEach
     void setUp() {
-        checkInService = new CheckInService(checkInRepository, userRepository, insightService);
+        ReflectProperties.FreeTier freeTier = new ReflectProperties.FreeTier(4);
+        ReflectProperties props = new ReflectProperties(
+                null, null, null, null, freeTier, null, null, null, null, null, null
+        );
+        checkInService = new CheckInService(checkInRepository, userRepository, insightService, props);
         userId = UUID.randomUUID();
         user = new User("test@example.com", "hash", "Test User");
     }
@@ -50,6 +55,7 @@ class CheckInServiceTest {
         var request = new CheckInRequest("Won a deal", null, null, null, null, null);
         LocalDate sunday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(checkInRepository.countCompletedByUserId(userId)).thenReturn(0L);
         when(checkInRepository.findByUserIdAndWeekStart(userId, sunday)).thenReturn(Optional.empty());
         when(checkInRepository.save(any(CheckIn.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -66,6 +72,7 @@ class CheckInServiceTest {
         LocalDate sunday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
         CheckIn existing = new CheckIn(user, sunday);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(checkInRepository.countCompletedByUserId(userId)).thenReturn(0L);
         when(checkInRepository.findByUserIdAndWeekStart(userId, sunday)).thenReturn(Optional.of(existing));
 
         ApiException ex = assertThrows(ApiException.class, () -> checkInService.create(userId, request));
@@ -195,5 +202,47 @@ class CheckInServiceTest {
         when(checkInRepository.findCompletedWeekStartsByUserIdDesc(userId))
                 .thenReturn(List.of(sunday.minusWeeks(1)));
         assertEquals(0, checkInService.getStreak(userId));
+    }
+
+    // ── Free Tier Enforcement ──────────────────────────────────────────
+
+    @Test
+    void create_blockedWhenFreeTierLimitReached() {
+        var request = new CheckInRequest("Wins", null, null, null, null, null);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(checkInRepository.countCompletedByUserId(userId)).thenReturn(4L);
+
+        ApiException ex = assertThrows(ApiException.class, () -> checkInService.create(userId, request));
+        assertEquals(403, ex.getStatus().value());
+        assertTrue(ex.getMessage().contains("Free tier limit reached"));
+        verify(checkInRepository, never()).save(any());
+    }
+
+    @Test
+    void create_allowedWhenProUserExceedsFreeTierLimit() {
+        user.setSubscriptionStatus("ACTIVE");
+        var request = new CheckInRequest("Wins", null, null, null, null, null);
+        LocalDate sunday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(checkInRepository.findByUserIdAndWeekStart(userId, sunday)).thenReturn(Optional.empty());
+        when(checkInRepository.save(any(CheckIn.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        CheckIn result = checkInService.create(userId, request);
+        assertNotNull(result);
+        // countCompletedByUserId should NOT be called for Pro users
+        verify(checkInRepository, never()).countCompletedByUserId(any());
+    }
+
+    @Test
+    void create_allowedWhenUnderFreeTierLimit() {
+        var request = new CheckInRequest("Wins", null, null, null, null, null);
+        LocalDate sunday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(checkInRepository.countCompletedByUserId(userId)).thenReturn(3L);
+        when(checkInRepository.findByUserIdAndWeekStart(userId, sunday)).thenReturn(Optional.empty());
+        when(checkInRepository.save(any(CheckIn.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        CheckIn result = checkInService.create(userId, request);
+        assertNotNull(result);
     }
 }

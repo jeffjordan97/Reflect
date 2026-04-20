@@ -9,12 +9,15 @@ public record UserResponse(
         String email,
         String displayName,
         boolean emailVerified,
+        String subscriptionStatus,
+        boolean pro,
         OffsetDateTime createdAt
 ) {
     public static UserResponse from(User user) {
         return new UserResponse(
                 user.getId(), user.getEmail(),
                 user.getDisplayName(), user.isEmailVerified(),
+                user.getSubscriptionStatus(), user.isPro(),
                 user.getCreatedAt()
         );
     }

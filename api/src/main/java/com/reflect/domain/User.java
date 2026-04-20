@@ -30,6 +30,12 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    @Column(name = "stripe_customer_id", length = 255)
+    private String stripeCustomerId;
+
+    @Column(name = "subscription_status", nullable = false, length = 20)
+    private String subscriptionStatus;
+
     protected User() {}
 
     public User(String email, String passwordHash, String displayName) {
@@ -37,6 +43,7 @@ public class User {
         this.passwordHash = passwordHash;
         this.displayName = displayName;
         this.emailVerified = false;
+        this.subscriptionStatus = "FREE";
     }
 
     @PrePersist
@@ -60,4 +67,14 @@ public class User {
     public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public void setDisplayName(String displayName) { this.displayName = displayName; }
+
+    public String getStripeCustomerId() { return stripeCustomerId; }
+    public void setStripeCustomerId(String stripeCustomerId) { this.stripeCustomerId = stripeCustomerId; }
+
+    public String getSubscriptionStatus() { return subscriptionStatus; }
+    public void setSubscriptionStatus(String subscriptionStatus) { this.subscriptionStatus = subscriptionStatus; }
+
+    public boolean isPro() {
+        return "ACTIVE".equals(subscriptionStatus);
+    }
 }

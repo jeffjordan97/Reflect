@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN stripe_customer_id VARCHAR(255);
+ALTER TABLE users ADD COLUMN subscription_status VARCHAR(20) NOT NULL DEFAULT 'FREE';

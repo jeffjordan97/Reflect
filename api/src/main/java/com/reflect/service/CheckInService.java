@@ -1,5 +1,6 @@
 package com.reflect.service;
 
+import com.reflect.config.ReflectProperties;
 import com.reflect.controller.dto.CheckInRequest;
 import com.reflect.domain.CheckIn;
 import com.reflect.domain.User;
@@ -24,18 +25,28 @@ public class CheckInService {
     private final CheckInRepository checkInRepository;
     private final UserRepository userRepository;
     private final InsightService insightService;
+    private final int maxCheckIns;
 
     public CheckInService(CheckInRepository checkInRepository, UserRepository userRepository,
-                          InsightService insightService) {
+                          InsightService insightService, ReflectProperties properties) {
         this.checkInRepository = checkInRepository;
         this.userRepository = userRepository;
         this.insightService = insightService;
+        this.maxCheckIns = properties.freeTier().maxCheckIns();
     }
 
     @Transactional
     public CheckIn create(UUID userId, CheckInRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> ApiException.notFound("User not found"));
+
+        if (!user.isPro()) {
+            long completedCount = checkInRepository.countCompletedByUserId(userId);
+            if (completedCount >= maxCheckIns) {
+                throw ApiException.forbidden("Free tier limit reached. Upgrade to Pro for unlimited check-ins.");
+            }
+        }
+
         LocalDate sunday = currentWeekSunday();
         if (checkInRepository.findByUserIdAndWeekStart(userId, sunday).isPresent()) {
             throw ApiException.conflict("Check-in already exists for this week");

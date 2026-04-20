@@ -17,4 +17,7 @@ public interface CheckInRepository extends JpaRepository<CheckIn, UUID> {
 
     @Query("SELECT c.weekStart FROM CheckIn c WHERE c.user.id = :userId AND c.completed = true ORDER BY c.weekStart DESC")
     List<LocalDate> findCompletedWeekStartsByUserIdDesc(UUID userId);
+
+    @Query("SELECT COUNT(c) FROM CheckIn c WHERE c.user.id = :userId AND c.completed = true")
+    long countCompletedByUserId(UUID userId);
 }
