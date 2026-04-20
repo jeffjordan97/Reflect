@@ -1,11 +1,11 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Spinner from "@/components/Spinner";
+import PricingCards from "@/components/PricingCards";
 import type { ApiError, UserResponse } from "@/lib/types";
 
 interface ProfileErrors {
@@ -370,26 +370,27 @@ function SubscriptionSection({ user }: { user: UserResponse }) {
       <h2 className="text-lg font-semibold text-gray-900 mb-4">
         Subscription
       </h2>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <p className="text-sm text-gray-700">
             Current plan:{" "}
             <span className="font-medium text-gray-900">{label}</span>
           </p>
         </div>
-        {isActive ? (
+        {isActive && (
           <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
             Active
           </span>
-        ) : (
-          <Link
-            href="/check-in"
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            Upgrade to Pro
-          </Link>
         )}
       </div>
+      {!isActive && (
+        <div className="mt-2">
+          <p className="text-sm text-gray-500 mb-4">
+            Upgrade for unlimited weekly reflections and AI insights.
+          </p>
+          <PricingCards />
+        </div>
+      )}
     </section>
   );
 }
