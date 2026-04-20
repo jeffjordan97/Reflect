@@ -8,6 +8,8 @@ export interface UserResponse {
   email: string;
   displayName: string;
   emailVerified: boolean;
+  subscriptionStatus: string;
+  pro: boolean;
   createdAt: string;
 }
 

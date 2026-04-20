@@ -31,6 +31,14 @@ export default function Header() {
             >
               History
             </Link>
+            {!user.pro && (
+              <Link
+                href="/check-in"
+                className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+              >
+                Upgrade
+              </Link>
+            )}
             <Link
               href="/account"
               className="text-sm text-gray-500 hover:text-gray-900"

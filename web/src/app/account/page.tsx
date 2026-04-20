@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import { useRouter } from "next/navigation";
@@ -347,6 +348,52 @@ function ChangePasswordSection() {
   );
 }
 
+function getSubscriptionLabel(status: string): string {
+  switch (status) {
+    case "ACTIVE":
+      return "Pro";
+    case "CANCELED":
+      return "Pro (Canceled)";
+    case "PAST_DUE":
+      return "Pro (Past Due)";
+    default:
+      return "Free";
+  }
+}
+
+function SubscriptionSection({ user }: { user: UserResponse }) {
+  const label = getSubscriptionLabel(user.subscriptionStatus);
+  const isActive = user.subscriptionStatus === "ACTIVE";
+
+  return (
+    <section>
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        Subscription
+      </h2>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-gray-700">
+            Current plan:{" "}
+            <span className="font-medium text-gray-900">{label}</span>
+          </p>
+        </div>
+        {isActive ? (
+          <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+            Active
+          </span>
+        ) : (
+          <Link
+            href="/check-in"
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            Upgrade to Pro
+          </Link>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export default function AccountPage() {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
@@ -382,6 +429,10 @@ export default function AccountPage() {
         <hr className="border-gray-200" />
 
         <ChangePasswordSection />
+
+        <hr className="border-gray-200" />
+
+        <SubscriptionSection user={displayUser} />
 
         <hr className="border-gray-200" />
 
