@@ -47,7 +47,7 @@ export default function PricingCards() {
         <div className="rounded-lg border border-gray-200 p-5">
           <p className="text-sm font-medium text-gray-900 mb-1">Monthly</p>
           <p className="text-2xl font-bold text-gray-900 mb-1">
-            &pound;2.99
+            &pound;7.99
             <span className="text-sm font-normal text-gray-500">/mo</span>
           </p>
           <button
@@ -61,11 +61,11 @@ export default function PricingCards() {
 
         <div className="rounded-lg border-2 border-primary-600 p-5 relative">
           <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-primary-600 px-2.5 py-0.5 text-xs font-medium text-white">
-            Save 17%
+            Save 37%
           </span>
           <p className="text-sm font-medium text-gray-900 mb-1">Annual</p>
           <p className="text-2xl font-bold text-gray-900 mb-1">
-            &pound;29.99
+            &pound;59.99
             <span className="text-sm font-normal text-gray-500">/yr</span>
           </p>
           <button
