@@ -36,6 +36,9 @@ public class User {
     @Column(name = "subscription_status", nullable = false, length = 20)
     private String subscriptionStatus;
 
+    @Column(name = "reminders_enabled", nullable = false)
+    private boolean remindersEnabled;
+
     protected User() {}
 
     public User(String email, String passwordHash, String displayName) {
@@ -44,6 +47,7 @@ public class User {
         this.displayName = displayName;
         this.emailVerified = false;
         this.subscriptionStatus = "FREE";
+        this.remindersEnabled = true;
     }
 
     @PrePersist
@@ -73,6 +77,9 @@ public class User {
 
     public String getSubscriptionStatus() { return subscriptionStatus; }
     public void setSubscriptionStatus(String subscriptionStatus) { this.subscriptionStatus = subscriptionStatus; }
+
+    public boolean isRemindersEnabled() { return remindersEnabled; }
+    public void setRemindersEnabled(boolean remindersEnabled) { this.remindersEnabled = remindersEnabled; }
 
     public boolean isPro() {
         return "ACTIVE".equals(subscriptionStatus);

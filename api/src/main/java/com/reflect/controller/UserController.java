@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -49,5 +50,21 @@ public class UserController {
     ) {
         authService.changePassword(userId, request.currentPassword(), request.newPassword());
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/me/reminders")
+    public ResponseEntity<UserResponse> updateReminders(
+            @AuthenticationPrincipal UUID userId,
+            @RequestBody Map<String, Boolean> body
+    ) {
+        Boolean enabled = body.get("enabled");
+        if (enabled == null) {
+            throw ApiException.badRequest("'enabled' field is required");
+        }
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("User not found"));
+        user.setRemindersEnabled(enabled);
+        userRepository.save(user);
+        return ResponseEntity.ok(UserResponse.from(user));
     }
 }

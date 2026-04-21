@@ -10,6 +10,7 @@ export interface UserResponse {
   emailVerified: boolean;
   subscriptionStatus: string;
   pro: boolean;
+  remindersEnabled: boolean;
   createdAt: string;
 }
 

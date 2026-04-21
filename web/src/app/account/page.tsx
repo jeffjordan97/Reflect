@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import { useRouter } from "next/navigation";
@@ -348,6 +348,65 @@ function ChangePasswordSection() {
   );
 }
 
+function NotificationsSection({
+  user,
+  onUpdate,
+}: {
+  user: UserResponse;
+  onUpdate: (updated: UserResponse) => void;
+}) {
+  const [enabled, setEnabled] = useState(user.remindersEnabled);
+  const [saving, setSaving] = useState(false);
+
+  const handleToggle = useCallback(async () => {
+    const newValue = !enabled;
+    setEnabled(newValue);
+    setSaving(true);
+    try {
+      const updated = await apiFetch<UserResponse>("/api/users/me/reminders", {
+        method: "PATCH",
+        body: JSON.stringify({ enabled: newValue }),
+      });
+      onUpdate(updated);
+    } catch {
+      setEnabled(!newValue);
+    } finally {
+      setSaving(false);
+    }
+  }, [enabled, onUpdate]);
+
+  return (
+    <section>
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        Notifications
+      </h2>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-700">Sunday reminders</p>
+          <p className="text-xs text-gray-500">
+            Receive a weekly email reminder to complete your check-in
+          </p>
+        </div>
+        <button
+          onClick={handleToggle}
+          disabled={saving}
+          role="switch"
+          aria-checked={enabled}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+            enabled ? "bg-primary-600" : "bg-gray-200"
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              enabled ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function getSubscriptionLabel(status: string): string {
   switch (status) {
     case "ACTIVE":
@@ -430,6 +489,13 @@ export default function AccountPage() {
         <hr className="border-gray-200" />
 
         <ChangePasswordSection />
+
+        <hr className="border-gray-200" />
+
+        <NotificationsSection
+          user={displayUser}
+          onUpdate={(updated) => setCurrentUser(updated)}
+        />
 
         <hr className="border-gray-200" />
 

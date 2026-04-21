@@ -11,6 +11,7 @@ public record UserResponse(
         boolean emailVerified,
         String subscriptionStatus,
         boolean pro,
+        boolean remindersEnabled,
         OffsetDateTime createdAt
 ) {
     public static UserResponse from(User user) {
@@ -18,6 +19,7 @@ public record UserResponse(
                 user.getId(), user.getEmail(),
                 user.getDisplayName(), user.isEmailVerified(),
                 user.getSubscriptionStatus(), user.isPro(),
+                user.isRemindersEnabled(),
                 user.getCreatedAt()
         );
     }

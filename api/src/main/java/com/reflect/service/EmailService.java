@@ -65,6 +65,29 @@ public class EmailService {
         sendEmail(toEmail, "Verify your Reflect email", html);
     }
 
+    public void sendReminderEmail(String toEmail, String displayName, String frontendBaseUrl) {
+        String checkinUrl = frontendBaseUrl + "/check-in";
+        String html = """
+                <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto;">
+                  <h2 style="font-size: 20px; font-weight: 600;">Time to reflect, %s</h2>
+                  <p style="color: #475569; line-height: 1.6;">
+                    Your weekly check-in is waiting. Take a few minutes to look back on your week — what moved forward, where you felt resistance, and what matters most next.
+                  </p>
+                  <a href="%s"
+                     style="display: inline-block; background: #4F46E5; color: white; padding: 10px 24px;
+                            border-radius: 8px; text-decoration: none; font-weight: 500; margin: 16px 0;">
+                    Start your check-in
+                  </a>
+                  <p style="color: #94A3B8; font-size: 13px; line-height: 1.5;">
+                    You're receiving this because you have reminders enabled in Reflect.
+                    You can turn them off in your account settings.
+                  </p>
+                </div>
+                """.formatted(displayName, checkinUrl);
+
+        sendEmail(toEmail, "Your weekly check-in is ready", html);
+    }
+
     private void sendEmail(String to, String subject, String html) {
         try {
             CreateEmailOptions request = CreateEmailOptions.builder()
