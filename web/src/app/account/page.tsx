@@ -425,7 +425,7 @@ function SubscriptionSection({ user }: { user: UserResponse }) {
   const isActive = user.subscriptionStatus === "ACTIVE";
 
   return (
-    <section>
+    <section id="subscription">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">
         Subscription
       </h2>

@@ -59,7 +59,17 @@ export default function CheckInPage() {
   if (checkIn && checkIn.completed) return (
     <>
       <div className="mx-auto w-full max-w-xl px-4 pt-8">
-        <StreakBadge />
+        <div className="flex items-start justify-between gap-4">
+          <StreakBadge />
+          {user && !user.pro && (
+            <a
+              href="/account#subscription"
+              className="shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-500 shadow-sm hover:text-primary-600 hover:border-primary-200 transition-colors"
+            >
+              Free plan · Upgrade
+            </a>
+          )}
+        </div>
       </div>
       <CheckInDetail checkIn={checkIn} />
     </>

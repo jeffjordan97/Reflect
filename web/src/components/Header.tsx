@@ -24,26 +24,29 @@ export default function Header() {
         </Link>
 
         {user && (
-          <nav className="flex items-center gap-6">
+          <nav className="flex items-center gap-5">
+            <Link
+              href="/check-in"
+              className="text-sm text-gray-500 hover:text-gray-900"
+            >
+              Check-in
+            </Link>
             <Link
               href="/history"
               className="text-sm text-gray-500 hover:text-gray-900"
             >
               History
             </Link>
-            {!user.pro && (
-              <Link
-                href="/check-in"
-                className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
-              >
-                Upgrade
-              </Link>
-            )}
             <Link
               href="/account"
-              className="text-sm text-gray-500 hover:text-gray-900"
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900"
             >
               {user.displayName}
+              {user.pro && (
+                <span className="rounded-full bg-primary-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-700">
+                  Pro
+                </span>
+              )}
             </Link>
             <button
               onClick={handleLogout}
