@@ -63,18 +63,21 @@ public class InsightService {
     private final InsightRepository insightRepository;
     private final CheckInRepository checkInRepository;
     private final AnthropicClient anthropicClient;
+    private final MonthlyInsightService monthlyInsightService;
     private final String model;
 
     public InsightService(
             InsightRepository insightRepository,
             CheckInRepository checkInRepository,
             AnthropicClient anthropicClient,
-            ReflectProperties properties
+            ReflectProperties properties,
+            MonthlyInsightService monthlyInsightService
     ) {
         this.insightRepository = insightRepository;
         this.checkInRepository = checkInRepository;
         this.anthropicClient = anthropicClient;
         this.model = properties.anthropic().modelHaiku();
+        this.monthlyInsightService = monthlyInsightService;
     }
 
     /**
@@ -133,6 +136,9 @@ public class InsightService {
             insightRepository.save(insight);
             log.info("Generated insight for check-in {} ({} input tokens, {} output tokens)",
                     checkInId, result.usage().inputTokens(), result.usage().outputTokens());
+
+            // Trigger monthly insight generation if due
+            monthlyInsightService.generateIfDue(checkIn.getUser().getId());
         } catch (Exception e) {
             log.error("Failed to generate insight for check-in {}: {}", checkInId, e.getMessage());
         }

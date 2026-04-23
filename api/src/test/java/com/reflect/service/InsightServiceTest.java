@@ -29,6 +29,7 @@ class InsightServiceTest {
     @Mock private InsightRepository insightRepository;
     @Mock private CheckInRepository checkInRepository;
     @Mock private AnthropicClient anthropicClient;
+    @Mock private MonthlyInsightService monthlyInsightService;
 
     private InsightService insightService;
     private User user;
@@ -45,7 +46,9 @@ class InsightServiceTest {
         ReflectProperties props = new ReflectProperties(
                 null, anthropic, null, null, null, null, null, null, null, null, null
         );
-        insightService = new InsightService(insightRepository, checkInRepository, anthropicClient, props);
+        insightService = new InsightService(
+                insightRepository, checkInRepository, anthropicClient, props, monthlyInsightService
+        );
 
         user = new User("test@example.com", "hash", "Test User");
         checkInId = UUID.randomUUID();
