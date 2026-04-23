@@ -26,16 +26,36 @@ public class InsightService {
             Your role is to offer a brief, 2-3 sentence reflection on a user's weekly check-in
             that picks up on something specific they wrote.
 
-            Voice:
-            - Calm and warm, never prescriptive
-            - Acknowledge uncertainty ("this suggests..." not "you are...")
-            - Gentle observation, not advice
-            - Never use urgency or exclamation marks
+            ## Voice
+            - Calm and warm, never prescriptive or performative
+            - Acknowledge uncertainty: "this suggests..." not "you are..."
+            - Gentle observation, not advice. Never say "you should", "try to", or "consider"
+            - Never use urgency, exclamation marks, or superlatives
             - Refer to the user in second person
+            - Never simulate emotions: no "I feel", "I'm sorry to hear", "that must be hard",
+              or "that's wonderful". Demonstrate understanding through accurate reflection,
+              not emotional performance
 
-            Keep it to 2-3 sentences maximum. Focus on one concrete observation that pairs two
-            fields (e.g., energy + friction, or signal moment + wins) rather than summarizing
-            everything. Avoid bullet points. Write as flowing prose.
+            ## What to do
+            - Focus on one concrete observation that pairs two fields (e.g., energy + friction,
+              or signal moment + intentions) rather than summarising everything
+            - Amplify the user's own language. If they used words like "need", "want", or "will",
+              reflect that back — their own commitment language matters more than your analysis
+            - When a previous week's intentions are provided, note any connection between what
+              they intended and what they reported this week. Do not judge; just surface the link
+            - Look for exceptions: if a recurring pattern broke this week, notice what was different
+            - If the user's intentions are vague ("be more productive"), notice that specificity
+              might help, without prescribing what specifically to do
+
+            ## After a hard week (low energy, heavy friction)
+            - Never imply they should have done better
+            - Normalise difficulty: "Weeks like this are part of the picture"
+            - Acknowledge what they did notice or name — that act of reflection has value
+            - Do not promise next week will be better
+
+            ## Format
+            - 2-3 sentences maximum, flowing prose, no bullet points
+            - One observation, not a summary
             """;
 
     private static final int MAX_OUTPUT_TOKENS = 250;
@@ -83,7 +103,18 @@ public class InsightService {
                 return;
             }
 
-            String userMessage = buildUserMessage(checkIn);
+            // Look up previous week's intentions to close the feedback loop
+            Optional<CheckIn> previousWeek = checkInRepository.findByUserIdAndWeekStart(
+                    checkIn.getUser().getId(),
+                    checkIn.getWeekStart().minusWeeks(1)
+            );
+            String previousIntentions = previousWeek
+                    .filter(CheckIn::isCompleted)
+                    .map(CheckIn::getIntentions)
+                    .filter(this::hasText)
+                    .orElse(null);
+
+            String userMessage = buildUserMessage(checkIn, previousIntentions);
             AnthropicClient.MessageResult result = anthropicClient.sendMessage(
                     model,
                     MAX_OUTPUT_TOKENS,
@@ -126,8 +157,16 @@ public class InsightService {
         generateFor(checkInId);
     }
 
-    private String buildUserMessage(CheckIn checkIn) {
-        StringBuilder sb = new StringBuilder("Here is this week's check-in:\n\n");
+    private String buildUserMessage(CheckIn checkIn, String previousIntentions) {
+        StringBuilder sb = new StringBuilder();
+
+        // Include last week's intentions for feedback loop (Locke & Latham)
+        if (previousIntentions != null) {
+            sb.append("**Last week's intentions:** ").append(previousIntentions).append("\n\n");
+            sb.append("---\n\n");
+        }
+
+        sb.append("Here is this week's check-in:\n\n");
         if (hasText(checkIn.getWins())) {
             sb.append("**Wins:** ").append(checkIn.getWins()).append("\n\n");
         }
