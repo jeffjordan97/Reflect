@@ -5,6 +5,7 @@ import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 import type { CheckInResponse, PaginatedResponse } from "@/lib/types";
 import CheckInCard from "@/components/CheckInCard";
+import MonthlyInsightCard from "@/components/MonthlyInsightCard";
 import Spinner from "@/components/Spinner";
 
 export default function HistoryPage() {
@@ -47,6 +48,10 @@ export default function HistoryPage() {
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8">
       <h1 className="text-xl font-semibold text-gray-900 mb-6">Your check-ins</h1>
+
+      <div className="mb-6">
+        <MonthlyInsightCard />
+      </div>
 
       {isLoading && checkIns.length === 0 ? (
         <Spinner />

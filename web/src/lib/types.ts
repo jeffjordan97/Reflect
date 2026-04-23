@@ -43,6 +43,15 @@ export interface InsightResponse {
   createdAt: string;
 }
 
+export interface MonthlyInsightResponse {
+  id: string;
+  content: string;
+  periodStart: string;
+  periodEnd: string;
+  checkInCount: number;
+  createdAt: string;
+}
+
 export interface PaginatedResponse<T> {
   content: T[];
   totalElements: number;
