@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <Header />
           <VerificationBanner />
-          <main className="pb-16 md:pb-0">{children}</main>
+          <main className="animate-fade-in pb-16 md:pb-0">{children}</main>
           <BottomNav />
         </AuthProvider>
       </body>
