@@ -6,6 +6,7 @@ import { apiFetch } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Spinner from "@/components/Spinner";
 import PricingCards from "@/components/PricingCards";
+import StreakBadge from "@/components/StreakBadge";
 import type { ApiError, UserResponse } from "@/lib/types";
 
 interface ProfileErrors {
@@ -61,13 +62,13 @@ function ProfileSection({
   }
 
   return (
-    <section>
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile</h2>
+    <section className="rounded-xl border border-border-default bg-surface p-6">
+      <h2 className="text-lg font-semibold text-text-primary mb-4">Profile</h2>
       <form onSubmit={handleSave} className="space-y-4">
         {errors.form && (
           <div
             role="alert"
-            className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-600"
+            className="rounded-xl bg-red-50 border border-red-200 p-3 text-sm text-red-600"
           >
             {errors.form}
           </div>
@@ -76,7 +77,7 @@ function ProfileSection({
         <div>
           <label
             htmlFor="displayName"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-text-primary mb-1"
           >
             Display name
           </label>
@@ -94,10 +95,10 @@ function ProfileSection({
             aria-describedby={
               errors.displayName ? "displayName-error" : undefined
             }
-            className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${
+            className={`w-full rounded-input border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${
               errors.displayName
                 ? "border-red-400 focus:border-red-500 focus:ring-red-500"
-                : "border-gray-200 focus:border-primary-500 focus:ring-primary-500"
+                : "border-border-input focus:border-primary-400 focus:ring-primary-400"
             }`}
           />
           {errors.displayName && (
@@ -108,7 +109,7 @@ function ProfileSection({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-text-primary mb-1">
             Email
           </label>
           <div className="flex items-center gap-2">
@@ -116,7 +117,7 @@ function ProfileSection({
               type="email"
               value={user.email}
               disabled
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 shadow-sm"
+              className="w-full rounded-input border border-border-input bg-slate-50 px-3 py-2 text-sm text-text-secondary shadow-sm"
             />
             {user.emailVerified ? (
               <span className="shrink-0 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
@@ -134,7 +135,7 @@ function ProfileSection({
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
+            className="rounded-input bg-primary-400 px-4 py-2 text-sm font-medium text-primary-900 shadow-sm hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save"}
           </button>
@@ -200,21 +201,21 @@ function ChangePasswordSection() {
   }
 
   return (
-    <section>
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+    <section className="rounded-xl border border-border-default bg-surface p-6">
+      <h2 className="text-lg font-semibold text-text-primary mb-4">
         Change password
       </h2>
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         {errors.form && (
           <div
             role="alert"
-            className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-600"
+            className="rounded-xl bg-red-50 border border-red-200 p-3 text-sm text-red-600"
           >
             {errors.form}
           </div>
         )}
         {success && (
-          <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-600">
+          <div className="rounded-xl bg-green-50 border border-green-200 p-3 text-sm text-green-600">
             Password updated successfully.
           </div>
         )}
@@ -222,7 +223,7 @@ function ChangePasswordSection() {
         <div>
           <label
             htmlFor="currentPassword"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-text-primary mb-1"
           >
             Current password
           </label>
@@ -241,10 +242,10 @@ function ChangePasswordSection() {
             aria-describedby={
               errors.currentPassword ? "currentPassword-error" : undefined
             }
-            className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${
+            className={`w-full rounded-input border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${
               errors.currentPassword
                 ? "border-red-400 focus:border-red-500 focus:ring-red-500"
-                : "border-gray-200 focus:border-primary-500 focus:ring-primary-500"
+                : "border-border-input focus:border-primary-400 focus:ring-primary-400"
             }`}
           />
           {errors.currentPassword && (
@@ -260,7 +261,7 @@ function ChangePasswordSection() {
         <div>
           <label
             htmlFor="newPassword"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-text-primary mb-1"
           >
             New password
           </label>
@@ -279,10 +280,10 @@ function ChangePasswordSection() {
             aria-describedby={
               errors.newPassword ? "newPassword-error" : "newPassword-hint"
             }
-            className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${
+            className={`w-full rounded-input border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${
               errors.newPassword
                 ? "border-red-400 focus:border-red-500 focus:ring-red-500"
-                : "border-gray-200 focus:border-primary-500 focus:ring-primary-500"
+                : "border-border-input focus:border-primary-400 focus:ring-primary-400"
             }`}
             placeholder="At least 8 characters"
           />
@@ -291,7 +292,7 @@ function ChangePasswordSection() {
               {errors.newPassword}
             </p>
           ) : (
-            <p id="newPassword-hint" className="mt-1 text-xs text-gray-400">
+            <p id="newPassword-hint" className="mt-1 text-xs text-text-muted">
               At least 8 characters
             </p>
           )}
@@ -300,7 +301,7 @@ function ChangePasswordSection() {
         <div>
           <label
             htmlFor="confirmPassword"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-text-primary mb-1"
           >
             Confirm new password
           </label>
@@ -319,10 +320,10 @@ function ChangePasswordSection() {
             aria-describedby={
               errors.confirmPassword ? "confirmPassword-error" : undefined
             }
-            className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${
+            className={`w-full rounded-input border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${
               errors.confirmPassword
                 ? "border-red-400 focus:border-red-500 focus:ring-red-500"
-                : "border-gray-200 focus:border-primary-500 focus:ring-primary-500"
+                : "border-border-input focus:border-primary-400 focus:ring-primary-400"
             }`}
             placeholder="Repeat your new password"
           />
@@ -339,7 +340,7 @@ function ChangePasswordSection() {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
+          className="rounded-input bg-primary-400 px-4 py-2 text-sm font-medium text-primary-900 shadow-sm hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 disabled:opacity-50"
         >
           {saving ? "Updating..." : "Update password"}
         </button>
@@ -376,14 +377,14 @@ function NotificationsSection({
   }, [enabled, onUpdate]);
 
   return (
-    <section>
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+    <section className="rounded-xl border border-border-default bg-surface p-6">
+      <h2 className="text-lg font-semibold text-text-primary mb-4">
         Notifications
       </h2>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-700">Sunday reminders</p>
-          <p className="text-xs text-gray-500">
+          <p className="text-sm font-medium text-text-primary">Sunday reminders</p>
+          <p className="text-xs text-text-secondary">
             Receive a weekly email reminder to complete your check-in
           </p>
         </div>
@@ -392,8 +393,8 @@ function NotificationsSection({
           disabled={saving}
           role="switch"
           aria-checked={enabled}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-            enabled ? "bg-primary-600" : "bg-gray-200"
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 ${
+            enabled ? "bg-primary-400" : "bg-border-default"
           }`}
         >
           <span
@@ -425,15 +426,15 @@ function SubscriptionSection({ user }: { user: UserResponse }) {
   const isActive = user.subscriptionStatus === "ACTIVE";
 
   return (
-    <section id="subscription">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+    <section id="subscription" className="rounded-xl border border-border-default bg-surface p-6">
+      <h2 className="text-lg font-semibold text-text-primary mb-4">
         Subscription
       </h2>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-text-primary">
             Current plan:{" "}
-            <span className="font-medium text-gray-900">{label}</span>
+            <span className="font-medium text-text-primary">{label}</span>
           </p>
         </div>
         {isActive && (
@@ -444,7 +445,7 @@ function SubscriptionSection({ user }: { user: UserResponse }) {
       </div>
       {!isActive && (
         <div className="mt-2">
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-text-secondary mb-4">
             Upgrade for unlimited weekly reflections and AI insights.
           </p>
           <PricingCards />
@@ -478,41 +479,35 @@ export default function AccountPage() {
 
   return (
     <div className="flex items-start justify-center px-4 pt-10 pb-16">
-      <div className="w-full max-w-xl space-y-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Account</h1>
+      <div className="w-full max-w-xl space-y-4">
+        <h1 className="font-serif text-2xl font-semibold text-text-primary">Account</h1>
+
+        <StreakBadge />
 
         <ProfileSection
           user={displayUser}
           onUpdate={(updated) => setCurrentUser(updated)}
         />
 
-        <hr className="border-gray-200" />
-
         <ChangePasswordSection />
-
-        <hr className="border-gray-200" />
 
         <NotificationsSection
           user={displayUser}
           onUpdate={(updated) => setCurrentUser(updated)}
         />
 
-        <hr className="border-gray-200" />
-
         <SubscriptionSection user={displayUser} />
 
-        <hr className="border-gray-200" />
-
-        <section>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <section className="rounded-xl border border-border-default bg-surface p-6">
+          <h2 className="text-lg font-semibold text-text-primary mb-4">
             Sign out
           </h2>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-text-secondary mb-4">
             Sign out of your account on this device.
           </p>
           <button
             onClick={handleSignOut}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+            className="rounded-input border border-border-default bg-surface px-4 py-2 text-sm font-medium text-text-primary shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2"
           >
             Sign out
           </button>
