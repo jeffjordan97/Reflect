@@ -6,10 +6,10 @@ import PricingCards from "./PricingCards";
 export default function UpgradePrompt() {
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8">
-      <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-sm text-center">
+      <div className="rounded-xl border border-border-default bg-surface p-8 shadow-sm text-center">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary-50">
           <svg
-            className="h-6 w-6 text-primary-600"
+            className="h-6 w-6 text-primary-400"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
@@ -23,10 +23,10 @@ export default function UpgradePrompt() {
           </svg>
         </div>
 
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold text-text-primary mb-2">
           You&apos;ve used your 4 free check-ins
         </h2>
-        <p className="text-sm text-gray-500 mb-8">
+        <p className="text-sm text-text-secondary mb-8">
           Upgrade to Pro for unlimited weekly reflections and AI insights.
         </p>
 
@@ -35,7 +35,7 @@ export default function UpgradePrompt() {
         <div className="mt-6">
           <Link
             href="/history"
-            className="text-sm text-gray-500 hover:text-gray-700"
+            className="text-sm text-text-secondary hover:text-text-primary"
           >
             View your history
           </Link>
