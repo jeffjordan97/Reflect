@@ -1,19 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Sparkles } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import type { InsightResponse } from "@/lib/types";
 
 interface InsightSectionProps {
   checkInId: string;
-  /**
-   * Whether the check-in is completed. The insight is only generated after
-   * completion, so we only look for it when the check-in is complete.
-   */
   completed: boolean;
 }
 
-// Poll every 2 seconds for up to 30 seconds total
 const POLL_INTERVAL_MS = 2_000;
 const MAX_POLL_ATTEMPTS = 15;
 
@@ -29,9 +25,7 @@ export default function InsightSection({ checkInId, completed }: InsightSectionP
   const fetchInsight = useCallback(
     async (mode: "initial-check" | "polling"): Promise<"found" | "missing" | "error"> => {
       try {
-        const data = await apiFetch<InsightResponse>(
-          `/api/insights/check-ins/${checkInId}`
-        );
+        const data = await apiFetch<InsightResponse>(`/api/insights/check-ins/${checkInId}`);
         if (!cancelledRef.current) {
           setInsight(data);
           setStatus("ready");
@@ -47,7 +41,6 @@ export default function InsightSection({ checkInId, completed }: InsightSectionP
     [checkInId]
   );
 
-  // On mount: check if an insight already exists. If not, show a generate prompt.
   useEffect(() => {
     if (!completed) return;
     cancelledRef.current = false;
@@ -67,10 +60,7 @@ export default function InsightSection({ checkInId, completed }: InsightSectionP
   async function handleGenerate() {
     setGenerating(true);
     try {
-      await apiFetch<void>(`/api/insights/check-ins/${checkInId}/generate`, {
-        method: "POST",
-      });
-      // Start polling
+      await apiFetch<void>(`/api/insights/check-ins/${checkInId}/generate`, { method: "POST" });
       setStatus("polling");
       attemptsRef.current = 0;
       poll();
@@ -95,22 +85,20 @@ export default function InsightSection({ checkInId, completed }: InsightSectionP
   }
 
   if (!completed) return null;
-
-  if (status === "initial-check") return null; // nothing visible while we check
+  if (status === "initial-check") return null;
 
   if (status === "missing") {
     return (
-      <div className="rounded-lg border border-primary-100 bg-primary-50 p-5">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-primary-700 mb-2">
-          Reflection
-        </h3>
-        <p className="text-sm text-gray-600 mb-3">
-          Generate a brief AI reflection on this check-in.
-        </p>
+      <div className="rounded-xl border border-purple-100 bg-purple-50 p-5">
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles size={14} className="text-purple-600" />
+          <h3 className="text-xs font-medium uppercase tracking-wide text-purple-600">Reflection</h3>
+        </div>
+        <p className="text-sm text-text-secondary mb-3">Generate a brief AI reflection on this check-in.</p>
         <button
           onClick={handleGenerate}
           disabled={generating}
-          className="rounded-lg bg-primary-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
+          className="rounded-input bg-purple-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50"
         >
           {generating ? "Starting..." : "Generate reflection"}
         </button>
@@ -120,50 +108,28 @@ export default function InsightSection({ checkInId, completed }: InsightSectionP
 
   if (status === "polling") {
     return (
-      <div className="rounded-lg border border-primary-100 bg-primary-50 p-5">
+      <div className="rounded-xl border border-purple-100 bg-purple-50 p-5">
         <div className="flex items-center gap-2 mb-2">
-          <svg
-            className="h-4 w-4 animate-spin text-primary-600"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
+          <svg className="h-4 w-4 animate-spin text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
           </svg>
-          <span className="text-xs font-medium uppercase tracking-wide text-primary-700">
-            Reflection
-          </span>
+          <span className="text-xs font-medium uppercase tracking-wide text-purple-600">Reflection</span>
         </div>
-        <p className="text-sm text-primary-900/70 italic">Reading your check-in...</p>
+        <p className="text-sm italic text-purple-900/70">Reading your check-in...</p>
       </div>
     );
   }
 
-  if (status === "error" || !insight) {
-    return null;
-  }
+  if (status === "error" || !insight) return null;
 
   return (
-    <div className="rounded-lg border border-primary-100 bg-primary-50 p-5">
-      <h3 className="text-xs font-medium uppercase tracking-wide text-primary-700 mb-2">
-        Reflection
-      </h3>
-      <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
-        {insight.content}
-      </p>
+    <div className="rounded-xl border border-purple-100 bg-purple-50 p-5">
+      <div className="flex items-center gap-2 mb-2">
+        <Sparkles size={14} className="text-purple-600" />
+        <h3 className="text-xs font-medium uppercase tracking-wide text-purple-600">Reflection</h3>
+      </div>
+      <p className="text-sm text-text-primary whitespace-pre-wrap leading-relaxed">{insight.content}</p>
     </div>
   );
 }

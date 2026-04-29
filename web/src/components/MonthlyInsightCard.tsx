@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Sparkles } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import type { MonthlyInsightResponse } from "@/lib/types";
 
@@ -28,16 +29,21 @@ export default function MonthlyInsightCard() {
   if (!insight) return null;
 
   return (
-    <div className="rounded-lg border border-primary-200 bg-gradient-to-br from-primary-50 to-white p-6 shadow-sm">
+    <div className="rounded-xl border border-purple-200 bg-surface p-6 shadow-[0_1px_2px_rgba(124,58,237,0.06)]">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-primary-700">
-          Monthly Reflection
-        </h3>
-        <span className="text-xs text-gray-400">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-purple-100">
+            <Sparkles size={14} className="text-purple-600" />
+          </div>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-purple-600">
+            Monthly Synthesis
+          </h3>
+        </div>
+        <span className="font-mono text-xs text-text-muted">
           {formatPeriod(insight.periodStart, insight.periodEnd)} · {insight.checkInCount} check-ins
         </span>
       </div>
-      <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+      <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">
         {insight.content}
       </p>
     </div>
