@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans, DM_Mono, Fraunces } from "next/font/google";
 import { AuthProvider } from "@/lib/auth";
 import Header from "@/components/Header";
+import BottomNav from "@/components/BottomNav";
 import VerificationBanner from "@/components/VerificationBanner";
 import "./globals.css";
 
@@ -38,7 +39,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <Header />
           <VerificationBanner />
-          <main>{children}</main>
+          <main className="pb-16 md:pb-0">{children}</main>
+          <BottomNav />
         </AuthProvider>
       </body>
     </html>
