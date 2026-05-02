@@ -32,6 +32,20 @@ function ProfileSection({
   const [errors, setErrors] = useState<ProfileErrors>({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [sendingVerification, setSendingVerification] = useState(false);
+
+  async function handleResendVerification() {
+    setSendingVerification(true);
+    try {
+      await apiFetch("/api/auth/resend-verification", { method: "POST" });
+      setVerificationSent(true);
+    } catch {
+      // Silently fail
+    } finally {
+      setSendingVerification(false);
+    }
+  }
 
   async function handleSave(e: FormEvent) {
     e.preventDefault();
@@ -124,9 +138,22 @@ function ProfileSection({
                 Verified
               </span>
             ) : (
-              <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
-                Unverified
-              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+                  Unverified
+                </span>
+                {verificationSent ? (
+                  <span className="text-xs text-green-600">Sent</span>
+                ) : (
+                  <button
+                    onClick={handleResendVerification}
+                    disabled={sendingVerification}
+                    className="text-xs font-medium text-primary-400 hover:text-primary-500 disabled:opacity-50"
+                  >
+                    {sendingVerification ? "Sending..." : "Resend"}
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>

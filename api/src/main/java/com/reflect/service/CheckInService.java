@@ -12,6 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
@@ -64,7 +67,13 @@ public class CheckInService {
         applyFields(checkIn, request);
         CheckIn saved = checkInRepository.save(checkIn);
         if (!wasCompleted && saved.isCompleted()) {
-            insightService.generateFor(saved.getId());
+            UUID savedId = saved.getId();
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    insightService.generateFor(savedId);
+                }
+            });
         }
         return saved;
     }

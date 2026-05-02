@@ -124,6 +124,12 @@
             <version>${stripe.version}</version>
         </dependency>
 
+        <!-- Spring Mail — JavaMailSender for local dev (MailHog) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <!-- Resend — transactional email (password reset, verification, reminders) -->
         <dependency>
             <groupId>com.resend</groupId>
