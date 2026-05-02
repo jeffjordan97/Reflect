@@ -111,7 +111,7 @@ export default function InsightSection({ checkInId, completed }: InsightSectionP
           <Sparkles size={14} className="text-purple-600" />
           <h3 className="text-xs font-medium uppercase tracking-wide text-purple-600">Reflection</h3>
         </div>
-        <p className="text-sm text-text-secondary mb-3">Reflection couldn't be generated right now.</p>
+        <p className="text-sm text-text-secondary mb-3">Reflection couldn&apos;t be generated right now.</p>
         <button
           onClick={triggerAndPoll}
           className="rounded-input bg-purple-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
