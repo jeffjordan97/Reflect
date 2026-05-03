@@ -2,10 +2,14 @@ package com.reflect.service;
 
 import com.reflect.config.ReflectProperties;
 import com.reflect.domain.CheckIn;
+import com.reflect.domain.Goal;
 import com.reflect.domain.Insight;
+import com.reflect.domain.UserProfile;
 import com.reflect.exception.ApiException;
 import com.reflect.repository.CheckInRepository;
+import com.reflect.repository.GoalRepository;
 import com.reflect.repository.InsightRepository;
+import com.reflect.repository.UserProfileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -62,6 +66,8 @@ public class InsightService {
 
     private final InsightRepository insightRepository;
     private final CheckInRepository checkInRepository;
+    private final UserProfileRepository userProfileRepository;
+    private final GoalRepository goalRepository;
     private final AnthropicClient anthropicClient;
     private final MonthlyInsightService monthlyInsightService;
     private final String model;
@@ -69,12 +75,16 @@ public class InsightService {
     public InsightService(
             InsightRepository insightRepository,
             CheckInRepository checkInRepository,
+            UserProfileRepository userProfileRepository,
+            GoalRepository goalRepository,
             AnthropicClient anthropicClient,
             ReflectProperties properties,
             MonthlyInsightService monthlyInsightService
     ) {
         this.insightRepository = insightRepository;
         this.checkInRepository = checkInRepository;
+        this.userProfileRepository = userProfileRepository;
+        this.goalRepository = goalRepository;
         this.anthropicClient = anthropicClient;
         this.model = properties.anthropic().modelHaiku();
         this.monthlyInsightService = monthlyInsightService;
@@ -117,11 +127,12 @@ public class InsightService {
                     .filter(this::hasText)
                     .orElse(null);
 
+            String systemPrompt = buildSystemPrompt(checkIn.getUser().getId());
             String userMessage = buildUserMessage(checkIn, previousIntentions);
             AnthropicClient.MessageResult result = anthropicClient.sendMessage(
                     model,
                     MAX_OUTPUT_TOKENS,
-                    SYSTEM_PROMPT,
+                    systemPrompt,
                     List.of(new AnthropicClient.Message("user", userMessage))
             );
 
@@ -189,6 +200,59 @@ public class InsightService {
             sb.append("**Intentions for next week:** ").append(checkIn.getIntentions()).append("\n\n");
         }
         sb.append("Offer a brief reflection.");
+        return sb.toString();
+    }
+
+    /**
+     * Build a dynamic system prompt that includes the base voice instructions
+     * plus per-user context (profile and active goals) when available.
+     * The profile/goals context makes the AI's reflections more specific and
+     * goal-aware without the user needing to repeat context each week.
+     */
+    private String buildSystemPrompt(UUID userId) {
+        StringBuilder sb = new StringBuilder(SYSTEM_PROMPT);
+
+        Optional<UserProfile> profile = userProfileRepository.findByUserId(userId);
+        List<Goal> activeGoals = goalRepository.findByUserIdAndStatusOrderBySortOrderAsc(userId, "ACTIVE");
+
+        if (profile.isEmpty() && activeGoals.isEmpty()) {
+            return sb.toString();
+        }
+
+        sb.append("\n\n## Context about this person\n");
+        sb.append("Use this to make your reflection more specific. Do not repeat ");
+        sb.append("this context back to them verbatim.\n\n");
+
+        profile.ifPresent(p -> {
+            if (hasText(p.getProfession())) {
+                sb.append("- They work as a ").append(p.getProfession());
+                if (hasText(p.getIndustry())) sb.append(" in ").append(p.getIndustry());
+                sb.append(".\n");
+            }
+            if (hasText(p.getRoleLevel())) {
+                sb.append("- Role level: ").append(p.getRoleLevel()).append(".\n");
+            }
+            if (p.getFocusAreas() != null && p.getFocusAreas().length > 0) {
+                sb.append("- They care about: ").append(String.join(", ", p.getFocusAreas())).append(".\n");
+            }
+            if (hasText(p.getBioContext())) {
+                sb.append("- Additional context: ").append(p.getBioContext()).append("\n");
+            }
+        });
+
+        if (!activeGoals.isEmpty()) {
+            sb.append("\nTheir current goals:\n");
+            for (Goal goal : activeGoals) {
+                sb.append("- [").append(goal.getHorizon()).append("] ").append(goal.getTitle());
+                if (hasText(goal.getDescription())) {
+                    sb.append(" — ").append(goal.getDescription());
+                }
+                sb.append("\n");
+            }
+            sb.append("\nIf this week's check-in connects to any goal, briefly note ");
+            sb.append("the connection. Do not force a connection if none exists.\n");
+        }
+
         return sb.toString();
     }
 

@@ -5,7 +5,9 @@ import com.reflect.domain.CheckIn;
 import com.reflect.domain.Insight;
 import com.reflect.domain.User;
 import com.reflect.repository.CheckInRepository;
+import com.reflect.repository.GoalRepository;
 import com.reflect.repository.InsightRepository;
+import com.reflect.repository.UserProfileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,6 +31,8 @@ class InsightServiceTest {
 
     @Mock private InsightRepository insightRepository;
     @Mock private CheckInRepository checkInRepository;
+    @Mock private UserProfileRepository userProfileRepository;
+    @Mock private GoalRepository goalRepository;
     @Mock private AnthropicClient anthropicClient;
     @Mock private MonthlyInsightService monthlyInsightService;
 
@@ -47,7 +52,8 @@ class InsightServiceTest {
                 null, anthropic, null, null, null, null, null, null, null, null, null
         );
         insightService = new InsightService(
-                insightRepository, checkInRepository, anthropicClient, props, monthlyInsightService
+                insightRepository, checkInRepository, userProfileRepository, goalRepository,
+                anthropicClient, props, monthlyInsightService
         );
 
         user = new User("test@example.com", "hash", "Test User");
