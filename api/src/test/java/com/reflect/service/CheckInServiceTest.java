@@ -7,6 +7,7 @@ import com.reflect.domain.User;
 import com.reflect.exception.ApiException;
 import com.reflect.repository.CheckInRepository;
 import com.reflect.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +42,12 @@ class CheckInServiceTest {
 
     @BeforeEach
     void setUp() {
+        // TransactionSynchronizationManager requires initialization for unit tests
+        // (CheckInService.update uses registerSynchronization for async insight generation)
+        if (!org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.initSynchronization();
+        }
+
         ReflectProperties.FreeTier freeTier = new ReflectProperties.FreeTier(4);
         ReflectProperties props = new ReflectProperties(
                 null, null, null, null, freeTier, null, null, null, null, null, null
@@ -48,6 +55,13 @@ class CheckInServiceTest {
         checkInService = new CheckInService(checkInRepository, userRepository, insightService, props);
         userId = UUID.randomUUID();
         user = new User("test@example.com", "hash", "Test User");
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.clearSynchronization();
+        }
     }
 
     @Test
@@ -126,7 +140,7 @@ class CheckInServiceTest {
     }
 
     @Test
-    void update_triggersInsightGenerationWhenCompletedTransitionsToTrue() {
+    void update_registersInsightGenerationWhenCompletedTransitionsToTrue() {
         UUID checkInId = UUID.randomUUID();
         LocalDate sunday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
         CheckIn checkIn = new CheckIn(user, sunday);
@@ -137,7 +151,10 @@ class CheckInServiceTest {
 
         checkInService.update(checkInId, userId, request);
 
-        verify(insightService).generateFor(any());
+        // Insight generation is deferred to afterCommit via TransactionSynchronization.
+        // Verify a synchronization was registered (it will fire generateFor after tx commits).
+        var syncs = org.springframework.transaction.support.TransactionSynchronizationManager.getSynchronizations();
+        assertFalse(syncs.isEmpty(), "Expected a TransactionSynchronization to be registered for insight generation");
     }
 
     @Test
